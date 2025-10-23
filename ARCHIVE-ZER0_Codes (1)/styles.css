@@ -1,0 +1,324 @@
+/* === MATCH Z-001 PAGE TO MAIN PAGE STYLE === */
+
+/* Base layout */
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0;
+  padding: 0;
+  background-color: #111;
+  color: #ddd;
+  font-family: "Consolas", monospace;
+}
+
+/* Header section — same as main page */
+.top-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  background-color: #111;
+  padding: 30px 0 10px 0;
+}
+
+.logo {
+  width: 200px;
+  height: 200px;
+}
+
+.site-title h1 {
+  font-size: 48px;
+  margin: 0;
+  color: white;
+}
+
+.site-title p {
+  font-size: 20px;
+  margin: 5px 0 0 0;
+  color: #ccc;
+}
+
+/* Navbar styling (if exists) */
+.topbar {
+  display: flex;
+  justify-content: center;
+  background-color: #222;
+  width: 100%;
+  padding: 10px 0;
+}
+
+.navbar ul {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 30px;
+}
+
+.navbar ul li a {
+  color: #ddd;
+  text-decoration: none;
+  font-size: 18px;
+  transition: color 0.3s ease;
+}
+
+.navbar ul li a:hover {
+  color: #ff6666;
+}
+
+/* === CONTENT AREA === */
+pre,
+.scp-entry {
+  width: calc(100% - 100px);   /* total width minus left+right offset */
+  max-width: 900px;
+  text-align: left;
+  background-color: #181818;
+  padding: 20px;
+  border-left: 4px solid #ff6666;
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(255, 102, 102, 0.1);
+  margin-top: 20px;
+  margin-left: 50px;           /* push content slightly right */
+  white-space: pre-wrap;       /* wrap long lines */
+}
+
+.scp-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.scp-entry pre {
+  background-color: #111;
+  margin-bottom: 15px;
+  padding: 20px;
+  border-left: 4px solid #ff6666;
+  border-radius: 4px;
+  width: 100%;
+}
+
+/* Spacing between logs */
+.scp-entry pre + pre {
+  margin-top: 10px;
+}
+
+/* Keep text readable */
+pre {
+  font-size: 16px;
+  line-height: 1.5;
+}
+/* === GLITCH EFFECT FOR "ARCHIVE-ZER0" TITLE === */
+.site-title h1 {
+  position: relative;
+  font-size: 48px;
+  color: #fff;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  animation: glitch 2s infinite;
+  text-shadow: 0 0 5px #ff6666, 0 0 10px #ff6666;
+}
+
+/* Create pseudo-elements for RGB offset effect */
+.site-title h1::before,
+.site-title h1::after {
+  content: "ARCHIVE-ZER0";
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0.8;
+  clip: rect(0, 900px, 0, 0);
+}
+
+/* Red shadow */
+.site-title h1::before {
+  left: 2px;
+  text-shadow: -2px 0 red;
+  animation: glitchTop 2s infinite linear alternate-reverse;
+}
+
+/* Blue shadow */
+.site-title h1::after {
+  left: -2px;
+  text-shadow: -2px 0 blue;
+  animation: glitchBottom 2s infinite linear alternate-reverse;
+}
+
+/* Keyframes for the main flicker */
+@keyframes glitch {
+  0%, 100% { text-shadow: 0 0 5px #ff6666; }
+  20% { text-shadow: 2px 2px 8px #ff6666; }
+  40% { text-shadow: -2px -2px 6px #ff6666; }
+  60% { text-shadow: 3px 0 10px #ff3333; }
+  80% { text-shadow: -3px 0 12px #ff9999; }
+}
+
+/* Keyframes for top glitch */
+@keyframes glitchTop {
+  0% { clip: rect(0, 900px, 0, 0); }
+  10% { clip: rect(0, 900px, 30px, 0); transform: translate(3px, -3px); }
+  20% { clip: rect(0, 900px, 15px, 0); transform: translate(-3px, 2px); }
+  30% { clip: rect(0, 900px, 25px, 0); transform: translate(1px, -1px); }
+  100% { clip: rect(0, 900px, 0, 0); transform: translate(0, 0); }
+}
+
+/* Keyframes for bottom glitch */
+@keyframes glitchBottom {
+  0% { clip: rect(0, 900px, 0, 0); }
+  10% { clip: rect(20px, 900px, 60px, 0); transform: translate(-2px, 3px); }
+  20% { clip: rect(40px, 900px, 80px, 0); transform: translate(2px, -1px); }
+  30% { clip: rect(25px, 900px, 70px, 0); transform: translate(-1px, 2px); }
+  100% { clip: rect(0, 900px, 0, 0); transform: translate(0, 0); }
+}
+/* === Universal Logo Style for All Pages === */
+
+.logo {
+  position: relative;
+  display: inline-block;
+  font-size: 48px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-shadow: 0 0 5px #00fff2, 0 0 10px #00fff2, 0 0 20px #00fff2;
+}
+
+/* Hover expansion + glow pulse */
+.logo:hover {
+  transform: scale(1.05);
+  text-shadow: 0 0 10px #00fff2, 0 0 20px #00fff2, 0 0 40px #00fff2, 0 0 80px #00fff2;
+}
+
+/* Optional subtle animation pulse (for homepage vibe) */
+@keyframes glow-pulse {
+  0% {
+    text-shadow: 0 0 5px #00fff2, 0 0 10px #00fff2, 0 0 20px #00fff2;
+  }
+  50% {
+    text-shadow: 0 0 10px #00fff2, 0 0 20px #00fff2, 0 0 40px #00fff2;
+  }
+  100% {
+    text-shadow: 0 0 5px #00fff2, 0 0 10px #00fff2, 0 0 20px #00fff2;
+  }
+}
+
+.logo {
+  animation: glow-pulse 3s infinite ease-in-out;
+}
+footer {
+      margin-top: 80px;
+      font-size: 0.8rem;
+      color: #666;
+      text-align: center;
+    }
+    a{
+      text-decoration: none;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 40px;
+      position: relative;
+      left: 50px; /* shifts the entire header section to the right */
+    }
+
+    .logo {
+      width: 200px;
+      height: auto;
+      object-fit: contain;
+      margin-right: 20px;
+      filter: drop-shadow(0 0 8px #00ffff80);
+      transition: transform 0.4s ease;
+    }
+
+    .logo:hover {
+      transform: scale(1.1);
+      filter: drop-shadow(0 0 12px #ff6666);
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      text-transform: uppercase;
+      color: #fff;
+      letter-spacing: 2px;
+      margin-bottom: 5px;
+      position: relative;
+      display: inline-block;
+    }
+
+    h1::after {
+      content: " ";
+      position: absolute;
+      left: 0;
+      bottom: -4px;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, #ff6666, #00ffff);
+      animation: glitchLine 2s infinite alternate;
+    }
+
+    @keyframes glitchLine {
+      0% {opacity: 0.6; transform: translateX(0);}
+      100% {opacity: 1; transform: translateX(5px);}
+    }
+
+    .glitch {
+      animation: glitchText 1s infinite;
+    }
+
+    @keyframes glitchText {
+      0% {text-shadow: 2px 0 #ff6666, -2px 0 #00ffff;}
+      50% {text-shadow: -2px 0 #ff6666, 2px 0 #00ffff;}
+      100% {text-shadow: 2px 0 #ff6666, -2px 0 #00ffff;}
+    }
+
+    .subtitle {
+      color: #999;
+      font-size: 0.9rem;
+      margin-bottom: 40px;
+      position: relative;
+      left: 50px;
+    }
+
+    p {
+      margin-bottom: 20px;
+      font-size: 1rem;
+      color: #d6d6d6;
+    }
+
+    .highlight {
+      color: #00ffff;
+      text-shadow: 0 0 5px #00ffff;
+    }
+
+    .section-title {
+      color: #ff6666;
+      font-size: 1.1rem;
+      margin-top: 40px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 1s forwards;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    footer {
+      margin-top: 80px;
+      font-size: 0.8rem;
+      color: #666;
+      text-align: center;
+    }
