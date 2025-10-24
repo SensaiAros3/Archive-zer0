@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" href="logo.ico">
+  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Archive-ZER0</title>
+</head>
+<body>
+  <div class="fade-in">
+    <div class="top-section">
+      <a href="index.html">
+        <img src="images/logo.png" alt="Archive Logo" class="logo">
+      </a>
+      <div class="site-title">
+        <h1>ARCHIVE-ZER0</h1>
+        <p>“Every world leaves echoes.<br>We collect them.”</p>
+      </div>
+    </div>
+
+    <pre>Z-010
+
+Object Class: Rift ◇
+
+Containment Status: Restricted Access (Knowledge Vault)
+
+Containment Procedures:
+Z-010 is secured in a controlled, magnetically shielded library room.
+All entries are logged; personnel must wear memory stabilizers.
+Books and objects are cataloged digitally before handling.
+
+Description:
+The Fractured Library consists of shelves containing books
+that constantly rewrite themselves based on unknown knowledge streams.
+Readers often experience temporary amnesia or sudden insights
+unrelated to their previous understanding.
+
+Backstory:
+Discovered in a forgotten monastery in Romania in 2017, monks reported
+books that altered their content overnight. Archive-ZER0 researchers
+found that information absorbed by readers often appeared in future
+editions of the books in unpredictable ways.
+</pre>
+
+<div class="scp-entry">
+<h2 style="font-family: Consolas;">Logs:</h2>
+<pre>
+Log 1 – Initial Cataloging
+Date: 2017‑11‑06
+Personnel Involved: Archivist V. Popescu
+Summary:
+Books displayed constant content shifts. Observers experienced mild
+confusion and selective memory loss. Containment enacted.
+
+</pre><br><pre>
+Log 2 – Cognitive Assessment
+Date: 2018‑01‑18
+Personnel Involved: Dr. L. Sato
+Procedure: Controlled reading sessions.
+Findings:
+Subjects retained fragments of unrelated knowledge.
+Library appears to “absorb” cognitive patterns from readers.
+
+</pre><br><pre>
+Log 3 – Incident Report Z-010-IR-03
+Date: 2018‑05‑09
+Personnel Involved: Archivist Team Sigma
+Summary:
+Unauthorized reading resulted in temporary memory erasure.
+Additional protective protocols established; reading limited to supervised sessions.
+</pre>
+</div>
+
+<footer>ARCHIVE-ZER0 © ████-2025</footer>
+<script>
+document.addEventListener("keydown", function(event) {
+  if (event.ctrlKey && event.key.toLowerCase() === "`") {
+    event.preventDefault();
+    window.location.href = "wander-page.html";
+  }
+});
+</script>
+</body>
+</html>
