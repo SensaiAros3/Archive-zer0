@@ -8,6 +8,14 @@
     <title>Archive-ZER0</title>
 </head>
 <body>
+  <script>
+document.addEventListener("keydown", function(event) {
+  if (event.ctrlKey && event.key.toLowerCase() === "`") {
+    event.preventDefault(); // prevents default browser action (like Ctrl+E opening search)
+    window.location.href = "wander-page.html"; // your target page
+  }
+});
+</script>
   <div class="fade-in">
     <div class="top-section">
   <a href="index.html">
@@ -129,3 +137,4 @@ All systems operational. Staff advised rotation to minimize exposure effects. Z-
     <footer>ARCHIVE-ZER0 © ████-2025</footer>
 </body>
 </html>
+
