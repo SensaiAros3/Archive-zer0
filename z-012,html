@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" href="logo.ico">
+  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Archive-ZER0</title>
+</head>
+<body>
+  <div class="fade-in">
+    <div class="top-section">
+      <a href="index.html">
+        <img src="images/logo.png" alt="Archive Logo" class="logo">
+      </a>
+      <div class="site-title">
+        <h1>ARCHIVE-ZER0</h1>
+        <p>“Every world leaves echoes.<br>We collect them.”</p>
+      </div>
+    </div>
+
+    <pre>Z-012
+
+Object Class: Rift ◇
+
+Containment Status: Restricted Access (Botanical Chamber)
+
+Containment Procedures:
+Z-012 is housed in a hermetically sealed greenhouse.
+Environmental controls maintain shifting seasonal cycles.
+Personnel must wear protective clothing due to unpredictable flora behavior.
+
+Description:
+The Shifting Garden continuously rearranges itself,
+changing plant positions, growth patterns, and environmental conditions.
+Visitors report spatial disorientation and minor hallucinations of unknown flora.
+
+Backstory:
+Discovered in 2016 in the Amazon basin, explorers noted that paths
+within the garden never repeated and plants moved subtly when unobserved.
+Archive-ZER0 relocated the anomaly to a controlled chamber for study.
+</pre>
+
+<div class="scp-entry">
+<h2 style="font-family: Consolas;">Logs:</h2>
+<pre>
+Log 1 – Initial Containment
+Date: 2016‑09‑21
+Personnel Involved: Field Team Delta
+Summary:
+Garden relocated with minimal disturbance.
+Observation revealed constant plant movement and unusual growth rates.
+
+</pre><br><pre>
+Log 2 – Environmental Study
+Date: 2017‑03‑10
+Personnel Involved: Dr. H. Alvarez
+Procedure: Sensor-based mapping of plant movements.
+Findings:
+Flora shifted patterns unpredictably; minor hallucinations observed in staff.
+
+</pre><br><pre>
+Log 3 – Incident Report Z-012-IR-05
+Date: 2018‑01‑14
+Personnel Involved: Research Team Gamma
+Summary:
+Unauthorized entry resulted in temporary spatial disorientation
+and minor psychological stress for one observer. Containment protocols reinforced.
+</pre>
+</div>
+
+<footer>ARCHIVE-ZER0 © ████-2025</footer>
+<script>
+document.addEventListener("keydown", function(event) {
+  if (event.ctrlKey && event.key.toLowerCase() === "`") {
+    event.preventDefault();
+    window.location.href = "wander-page.html";
+  }
+});
+</script>
+</body>
+</html>
