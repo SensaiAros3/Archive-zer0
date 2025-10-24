@@ -154,6 +154,47 @@
           window.location.href = `${id.toLowerCase()}.html`;
         }, 800);
       }
+        else if (cmd === "random") {
+  const anomalies = [
+    "z-001.html",
+    "z-002.html",
+    "z-003.html",
+    "z-004.html",
+    "z-005.html",
+    "z-006.html",
+    "z-007.html",
+    "z-008.html",
+    "z-009.html"
+  ];
+
+  // Check which ones exist before choosing
+  const checkExistence = async (url) => {
+    try {
+      const response = await fetch(url, { method: "HEAD" });
+      return response.ok;
+    } catch {
+      return false;
+    }
+  };
+
+  (async () => {
+    const existing = [];
+    for (const file of anomalies) {
+      if (await checkExistence(file)) existing.push(file);
+    }
+
+    if (existing.length > 0) {
+      const randomFile = existing[Math.floor(Math.random() * existing.length)];
+      print(`Opening ${randomFile.toUpperCase().replace(".HTML", "")}...`);
+      setTimeout(() => {
+        window.location.href = randomFile;
+      }, 800);
+    } else {
+      print("[ERROR] No accessible anomalies found.");
+    }
+  })();
+}
+
 
       else if (cmd === "report") {
         print("No active reports found.");
@@ -270,8 +311,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
