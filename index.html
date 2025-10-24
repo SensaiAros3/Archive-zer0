@@ -175,6 +175,15 @@
     <footer>ARCHIVE-ZER0 © ████-2025</footer>
     
   </div>
-  
+  <script>
+document.addEventListener("keydown", function(event) {
+  if (event.ctrlKey && event.key.toLowerCase() === "t") {
+    event.preventDefault(); // prevents default browser action (like Ctrl+E opening search)
+    window.location.href = "echo.html"; // your target page
+  }
+});
+</script>
+
 </body>
 </html>
+
