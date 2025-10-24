@@ -145,32 +145,61 @@ pre {
   animation: glitchBottom 2s infinite linear alternate-reverse;
 }
 
-/* Keyframes for the main flicker */
-@keyframes glitch {
-  0%, 100% { text-shadow: 0 0 5px #ff6666; }
-  20% { text-shadow: 2px 2px 8px #ff6666; }
-  40% { text-shadow: -2px -2px 6px #ff6666; }
-  60% { text-shadow: 3px 0 10px #ff3333; }
-  80% { text-shadow: -3px 0 12px #ff9999; }
-}
+ @keyframes glitchLine {
+      0% {opacity: 0.6; transform: translateX(0);}
+      100% {opacity: 1; transform: translateX(5px);}
+    }
 
-/* Keyframes for top glitch */
-@keyframes glitchTop {
-  0% { clip: rect(0, 900px, 0, 0); }
-  10% { clip: rect(0, 900px, 30px, 0); transform: translate(3px, -3px); }
-  20% { clip: rect(0, 900px, 15px, 0); transform: translate(-3px, 2px); }
-  30% { clip: rect(0, 900px, 25px, 0); transform: translate(1px, -1px); }
-  100% { clip: rect(0, 900px, 0, 0); transform: translate(0, 0); }
-}
+    .glitch {
+      animation: glitchText 1s infinite;
+    }
 
-/* Keyframes for bottom glitch */
-@keyframes glitchBottom {
-  0% { clip: rect(0, 900px, 0, 0); }
-  10% { clip: rect(20px, 900px, 60px, 0); transform: translate(-2px, 3px); }
-  20% { clip: rect(40px, 900px, 80px, 0); transform: translate(2px, -1px); }
-  30% { clip: rect(25px, 900px, 70px, 0); transform: translate(-1px, 2px); }
-  100% { clip: rect(0, 900px, 0, 0); transform: translate(0, 0); }
-}
+    @keyframes glitchText {
+      0% {text-shadow: 2px 0 #ff6666, -2px 0 #00ffff;}
+      50% {text-shadow: -2px 0 #ff6666, 2px 0 #00ffff;}
+      100% {text-shadow: 2px 0 #ff6666, -2px 0 #00ffff;}
+    }
+
+    .subtitle {
+      color: #999;
+      font-size: 0.9rem;
+      margin-bottom: 40px;
+      position: relative;
+      left: 50px;
+    }
+
+    p {
+      margin-bottom: 20px;
+      font-size: 1rem;
+      color: #d6d6d6;
+    }
+
+    .highlight {
+      color: #00ffff;
+      text-shadow: 0 0 5px #00ffff;
+    }
+
+    .section-title {
+      color: #ff6666;
+      font-size: 1.1rem;
+      margin-top: 40px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 1s forwards;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 /* === Universal Logo Style for All Pages === */
 
 .logo {
@@ -321,4 +350,5 @@ footer {
       font-size: 0.8rem;
       color: #666;
       text-align: center;
+
     }
