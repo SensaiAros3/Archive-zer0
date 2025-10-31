@@ -14,7 +14,7 @@
 
     body {
       background-color: #000;
-      color: #00fff2; /* cyan text */
+      color: #00fff2;
       display: flex;
       flex-direction: column;
       height: 100vh;
@@ -65,7 +65,7 @@
     }
 
     .error {
-      color: #ff003c; /* crimson */
+      color: #ff003c;
       text-shadow: 0 0 5px #ff003c;
     }
 
@@ -154,47 +154,39 @@
           window.location.href = `${id.toLowerCase()}.html`;
         }, 800);
       }
-        else if (cmd === "random") {
-  const anomalies = [
-    "z-001.html",
-    "z-002.html",
-    "z-003.html",
-    "z-004.html",
-    "z-005.html",
-    "z-006.html",
-    "z-007.html",
-    "z-008.html",
-    "z-009.html"
-  ];
 
-  // Check which ones exist before choosing
-  const checkExistence = async (url) => {
-    try {
-      const response = await fetch(url, { method: "HEAD" });
-      return response.ok;
-    } catch {
-      return false;
-    }
-  };
+      else if (cmd === "random") {
+        const anomalies = [
+          "z-001.html","z-002.html","z-003.html","z-004.html",
+          "z-005.html","z-006.html","z-007.html","z-008.html","z-009.html"
+        ];
 
-  (async () => {
-    const existing = [];
-    for (const file of anomalies) {
-      if (await checkExistence(file)) existing.push(file);
-    }
+        const checkExistence = async (url) => {
+          try {
+            const response = await fetch(url, { method: "HEAD" });
+            return response.ok;
+          } catch {
+            return false;
+          }
+        };
 
-    if (existing.length > 0) {
-      const randomFile = existing[Math.floor(Math.random() * existing.length)];
-      print(`Opening ${randomFile.toUpperCase().replace(".HTML", "")}...`);
-      setTimeout(() => {
-        window.location.href = randomFile;
-      }, 800);
-    } else {
-      print("[ERROR] No accessible anomalies found.");
-    }
-  })();
-}
+        (async () => {
+          const existing = [];
+          for (const file of anomalies) {
+            if (await checkExistence(file)) existing.push(file);
+          }
 
+          if (existing.length > 0) {
+            const randomFile = existing[Math.floor(Math.random() * existing.length)];
+            print(`Opening ${randomFile.toUpperCase().replace(".HTML", "")}...`);
+            setTimeout(() => {
+              window.location.href = randomFile;
+            }, 800);
+          } else {
+            print("[ERROR] No accessible anomalies found.");
+          }
+        })();
+      }
 
       else if (cmd === "report") {
         print("No active reports found.");
@@ -231,35 +223,34 @@
         print(`Current system time: ${now.toUTCString()}`);
       }
 
+      // ===== TRACE COMMAND =====
       else if (cmd.startsWith("trace ")) {
-  const target = cmd.substring(6).toUpperCase(); // everything after 'trace '
-  if (!target) return print("Usage: trace <target>");
+        const target = cmd.substring(6).toUpperCase();
+        if (!target) return print("Usage: trace <target>");
 
-  const sectors = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
-  const scanners = ["thermal", "spectral", "quantum", "neural", "infrared", "gravimetric"];
-  const randomSector = sectors[Math.floor(Math.random() * sectors.length)];
-  const randomScanner = scanners[Math.floor(Math.random() * scanners.length)];
+        const sectors = ["01","02","03","04","05","06","07","08","09","10","11","12"];
+        const scanners = ["thermal","spectral","quantum","neural","infrared","gravimetric"];
+        const randomSector = sectors[Math.floor(Math.random() * sectors.length)];
+        const randomScanner = scanners[Math.floor(Math.random() * scanners.length)];
 
-  print(`Tracing ${target}...`);
-  setTimeout(() => print("Signal acquired..."), 700);
-  setTimeout(() => print("Analyzing signal pattern..."), 1300);
+        print(`Tracing ${target}...`);
+        setTimeout(() => print("Signal acquired..."), 700);
+        setTimeout(() => print("Analyzing signal pattern..."), 1300);
 
-  setTimeout(() => {
-    const success = Math.random() > 0.3; // 70% chance of success
-    if (success) {
-      print(`[TRACE COMPLETE] ${target} last detected near Sector-${randomSector} on ${randomScanner} scanners.`);
-    } else {
-      const failMsgs = [
-        `[TRACE FAILED] ${target} signal lost during scan.`,
-        `[TRACE FAILED] ${target} interference detected.`,
-        `[TRACE FAILED] ${target} location could not be verified.`,
-        `[TRACE FAILED] ${target} returned null coordinates.`
-      ];
-      print(failMsgs[Math.floor(Math.random() * failMsgs.length)], "error");
-    }
-  }, 2200);
-}
-
+        setTimeout(() => {
+          const success = Math.random() > 0.3;
+          if (success) {
+            print(`[TRACE COMPLETE] ${target} last detected near Sector-${randomSector} on ${randomScanner} scanners.`);
+          } else {
+            const failMsgs = [
+              `[TRACE FAILED] ${target} signal lost during scan.`,
+              `[TRACE FAILED] ${target} interference detected.`,
+              `[TRACE FAILED] ${target} location could not be verified.`,
+              `[TRACE FAILED] ${target} returned null coordinates.`
+            ];
+            print(failMsgs[Math.floor(Math.random() * failMsgs.length)], "error");
+          }
+        }, 2200);
       }
 
       else if (cmd.startsWith("echo ")) {
@@ -272,7 +263,7 @@
         print("Title> _ (Not implemented in this demo)", "warning");
       }
 
-      // ===== LOGIN SYSTEM =====
+      // ===== LOGIN =====
       else if (cmd === "login") {
         print("Username> ");
         const user = prompt("Username:");
@@ -297,6 +288,7 @@
         const [c, id] = cmd.split(" ");
         print(`[DEV] ${c.toUpperCase()} command executed for ${id.toUpperCase()}.`, "success");
       }
+
       else if (cmd === "system") {
         print("ARCHIVE-ZER0 SYSTEM INFO:");
         print("OS Build: A0-Terminal v0.3");
@@ -304,28 +296,13 @@
         print("Security Layer: Active");
         print("Network Sync: Stable");
       }
+
       else if (cmd === "home") {
-  print("Returning to home directory...");
-  setTimeout(() => {
-    window.location.href = "index.html";
-  }, 800);
-}
-        else if (cmd === "random") {
-  const total = 6; // change this to however many Z-pages you have
-  const randomNum = Math.floor(Math.random() * total) + 1;
-  const formattedNum = String(randomNum).padStart(3, "0");
-  const page = `z-${formattedNum}.html`;
-
-  print(`Selecting random anomaly...`);
-  setTimeout(() => {
-    print(`Opening ${page.toUpperCase()}...`);
-    setTimeout(() => {
-      window.location.href = page;
-    }, 1000);
-  }, 800);
-}
-
-
+        print("Returning to home directory...");
+        setTimeout(() => {
+          window.location.href = "index.html";
+        }, 800);
+      }
 
       else {
         print("Unknown command.", "error");
@@ -334,5 +311,3 @@
   </script>
 </body>
 </html>
-
-
