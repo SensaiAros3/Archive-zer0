@@ -105,6 +105,9 @@
     let loginAttempts = 0;
     let loginDisabled = false;
 
+    const traceLog = {}; // Stores traced targets with sector, scanner, timestamp
+    const sectorIndex = {}; // Stores sector -> list of targets
+
     function print(text, cls = "") {
       const p = document.createElement("p");
       p.innerHTML = cls ? `<span class="${cls}">${text}</span>` : text;
@@ -119,194 +122,174 @@
     input.addEventListener("keydown", async function(event) {
       if (event.key === "Enter") {
         const command = input.value.trim();
+        if (!command) return;
         print("> " + command);
-        handleCommand(command.toLowerCase());
+        await handleCommand(command.toLowerCase());
         input.value = "";
       }
     });
 
-    function handleCommand(cmd) {
+    function indexTargetInSector(target, sector) {
+      if (!sectorIndex[sector]) sectorIndex[sector] = [];
+      if (!sectorIndex[sector].includes(target)) sectorIndex[sector].push(target);
+    }
+
+    function removeTargetFromSector(target, prevSector) {
+      if (!prevSector) return;
+      const arr = sectorIndex[prevSector];
+      if (!arr) return;
+      const idx = arr.indexOf(target);
+      if (idx !== -1) arr.splice(idx, 1);
+      if (arr.length === 0) delete sectorIndex[prevSector];
+    }
+
+    async function traceProgress(target) {
+      const totalSteps = 10;
+      for (let i = 1; i <= totalSteps; i++) {
+        const progress = "▓".repeat(i) + "░".repeat(totalSteps - i);
+        print(`Tracing ${target} [${progress}] ${i*10}%`);
+        await new Promise(res => setTimeout(res, 120));
+      }
+    }
+
+    function parseCommandParts(cmd) {
+      return cmd.split(" ").filter(Boolean);
+    }
+
+    async function handleCommand(cmd) {
       if (loginDisabled && cmd.startsWith("login")) {
         print("[ALERT] Login system temporarily disabled.", "error");
         return;
       }
 
-      // ===== BASIC COMMANDS =====
       if (cmd === "help") {
-        print("Available commands:<br>random - opens a random entity<br>system - shows active status<br>help — show available commands<br>login — authenticate<br>create — create new field report<br>archives — show archive summaries<br>view &lt;ID&gt; — open archive/log<br>report — list submitted reports<br>scan &lt;sector&gt; — simulate sector scan<br>decrypt &lt;ID&gt; — attempt decrypt<br>status — show HQ/terminal status<br>alerts — list active alerts<br>time — show in-universe time<br>trace &lt;ID&gt; — trace anomaly<br>echo &lt;msg&gt; — output message<br>clear — clear terminal");
+        print("Available commands:<br>random - opens a random entity<br>system - shows active status<br>help — show available commands<br>login — authenticate<br>create — create new field report<br>archives — show archive summaries<br>view &lt;ID&gt; — open archive/log<br>report — list submitted reports<br>scan &lt;sector&gt; — simulate sector scan<br>decrypt &lt;ID&gt; — attempt decrypt<br>status — show HQ/terminal status<br>alerts — list active alerts<br>time — show in-universe time<br>trace &lt;target&gt; — trace anomaly (stores location on success)<br>echo &lt;msg&gt; — output message<br>clear — clear terminal");
         if (devMode) {
-          print("<br><b>Developer Commands:</b><br>add &lt;ID&gt; — add new archive<br>remove &lt;ID&gt; — remove archive<br>lock &lt;ID&gt; — lock file<br>unlock &lt;ID&gt; — unlock file");
+          print("<br><b>Developer Commands:</b><br>add &lt;ID&gt; — add new archive<br>remove &lt;ID&gt; — remove archive<br>lock &lt;ID&gt; — lock file<br>unlock &lt;ID&gt; — unlock file<br>sectors — (DEV) reveal occupied sectors and contents<br>relocate &lt;target&gt; &lt;sector&gt; — move target to new sector");
         }
       }
 
-      else if (cmd === "clear") {
-        resetTerminal();
-      }
-
+      else if (cmd === "clear") resetTerminal();
       else if (cmd === "archives") {
-        print("ARCHIVE FILES SUMMARY:<br>Z-001<br>Z-002<br>Z-003<br>Z-004<br>Z-005<br>Z-006<br>Z-007<br>Z-008<br>Z-009<br>Z-010<br>Z-011<br>Z-012<br>Z-013<br>Z-014<br>Z-015<br>Z-016<br>Z-017<br>Z-018<br>Z-019<br>Z-020<br>Z-021<br>Z-022<br>Z-023<br>Z-024<br>Z-025<br>Z-026<br>Z-027<br>Z-028<br>Z-029<br>Z-030<br>Z-031<br>Z-032<br>Z-033<br>Z-034<br>Z-035<br>Z-036<br>Z-037<br>Z-038<br>Z-039<br>Z-040<br>Z-041<br>Z-042<br>Z-043<br>Z-044<br>Z-045<br>Z-046<br>Z-047<br>Z-048<br>Z-049<br>Z-050");
+        print("ARCHIVE FILES SUMMARY:<br>Z-001<br>Z-002<br>Z-003<br>Z-004<br>Z-005<br>Z-006<br>Z-007<br>Z-008<br>Z-009<br>Z-010");
       }
 
       else if (cmd.startsWith("view ")) {
-        const id = cmd.split(" ")[1]?.toUpperCase();
-        if (id) print(`Opening ${id}...`);
-        setTimeout(() => {
-          window.location.href = `${id.toLowerCase()}.html`;
-        }, 800);
+        const parts = parseCommandParts(cmd);
+        const id = parts[1]?.toUpperCase();
+        if (!id) return print("Usage: view <ID>");
+        print(`Opening ${id}...`);
+        setTimeout(() => { window.location.href = `${id.toLowerCase()}.html`; }, 800);
       }
 
       else if (cmd === "random") {
-        const anomalies = [
-          "z-001.html","z-002.html","z-003.html","z-004.html",
-          "z-005.html","z-006.html","z-007.html","z-008.html","z-009.html"
-        ];
-
+        const anomalies = ["z-001.html","z-002.html","z-003.html","z-004.html","z-005.html","z-006.html","z-007.html","z-008.html","z-009.html"];
         const checkExistence = async (url) => {
-          try {
-            const response = await fetch(url, { method: "HEAD" });
-            return response.ok;
-          } catch {
-            return false;
-          }
+          try { const response = await fetch(url, { method: "HEAD" }); return response.ok; }
+          catch { return false; }
         };
-
         (async () => {
           const existing = [];
-          for (const file of anomalies) {
-            if (await checkExistence(file)) existing.push(file);
-          }
-
+          for (const file of anomalies) { if (await checkExistence(file)) existing.push(file); }
           if (existing.length > 0) {
             const randomFile = existing[Math.floor(Math.random() * existing.length)];
-            print(`Opening ${randomFile.toUpperCase().replace(".HTML", "")}...`);
-            setTimeout(() => {
-              window.location.href = randomFile;
-            }, 800);
-          } else {
-            print("[ERROR] No accessible anomalies found.");
-          }
+            print(`Opening ${randomFile.toUpperCase().replace(".HTML","")}...`);
+            setTimeout(() => { window.location.href = randomFile; }, 800);
+          } else print("[ERROR] No accessible anomalies found.");
         })();
       }
 
-      else if (cmd === "report") {
-        print("No active reports found.");
-      }
-
+      else if (cmd === "report") print("No active reports found.");
       else if (cmd.startsWith("scan ")) {
-        const sector = cmd.split(" ")[1]?.toUpperCase();
+        const parts = parseCommandParts(cmd);
+        const sector = parts[1]?.toUpperCase();
         if (!sector) return print("Usage: scan <sector>");
-        print(`Initiating scan on ${sector}...`);
+        const sectorKey = sector.padStart(2,"0");
+        print(`Initiating scan on ${sectorKey}...`);
         setTimeout(() => {
-          print(`[SCAN COMPLETE] No anomalies detected in ${sector}.`);
-        }, 1500);
-      }
-
-      else if (cmd.startsWith("decrypt ")) {
-        const id = cmd.split(" ")[1]?.toUpperCase();
-        if (!id) return print("Usage: decrypt <ID>");
-        print(`[DECRYPT] Attempting to unlock ${id}...`);
-        setTimeout(() => {
-          print(`[ERROR] File ${id} is locked with level-4 clearance.`, "error");
+          const found = sectorIndex[sectorKey];
+          if (found && found.length > 0) {
+            print(`[SCAN COMPLETE] Detected ${found.length} object(s) in ${sectorKey}:`);
+            found.forEach(t => {
+              const info = traceLog[t];
+              if (info) print(` - ${t} (last traced on ${info.scanner} scanners at ${new Date(info.ts).toUTCString()})`);
+              else print(` - ${t} (unknown metadata)`);
+            });
+          } else print(`[SCAN COMPLETE] No anomalies detected in ${sectorKey}.`);
         }, 1200);
       }
 
-      else if (cmd === "status") {
-        print("HQ STATUS:<br>Active anomalies: 6<br>Pending reports: 2<br>New alerts: 1 (Crimson)<br>System Integrity: STABLE");
+      else if (cmd.startsWith("decrypt ")) {
+        const parts = parseCommandParts(cmd);
+        const id = parts[1]?.toUpperCase();
+        if (!id) return print("Usage: decrypt <ID>");
+        print(`[DECRYPT] Attempting to unlock ${id}...`);
+        setTimeout(() => { print(`[ERROR] File ${id} is locked with level-4 clearance.`, "error"); }, 1200);
       }
 
-      else if (cmd === "alerts") {
-        print("<span class='error'>[ALERT] Z-003 activity spike detected in SEC-07</span>");
-      }
+      else if (cmd === "status") print("HQ STATUS:<br>Active anomalies: 6<br>Pending reports: 2<br>New alerts: 1 (Crimson)<br>System Integrity: STABLE");
+      else if (cmd === "alerts") print("<span class='error'>[ALERT] Z-003 activity spike detected in SEC-07</span>");
+      else if (cmd === "time") print(`Current system time: ${new Date().toUTCString()}`);
 
-      else if (cmd === "time") {
-        const now = new Date();
-        print(`Current system time: ${now.toUTCString()}`);
-      }
-
-      // ===== TRACE COMMAND =====
       else if (cmd.startsWith("trace ")) {
-        const target = cmd.substring(6).toUpperCase();
+        const target = cmd.substring(6).trim().toUpperCase();
         if (!target) return print("Usage: trace <target>");
-
         const sectors = ["01","02","03","04","05","06","07","08","09","10","11","12"];
         const scanners = ["thermal","spectral","quantum","neural","infrared","gravimetric"];
-        const randomSector = sectors[Math.floor(Math.random() * sectors.length)];
-        const randomScanner = scanners[Math.floor(Math.random() * scanners.length)];
-
-        print(`Tracing ${target}...`);
-        setTimeout(() => print("Signal acquired..."), 700);
-        setTimeout(() => print("Analyzing signal pattern..."), 1300);
-
-        setTimeout(() => {
-          const success = Math.random() > 0.3;
-          if (success) {
-            print(`[TRACE COMPLETE] ${target} last detected near Sector-${randomSector} on ${randomScanner} scanners.`);
-          } else {
-            const failMsgs = [
-              `[TRACE FAILED] ${target} signal lost during scan.`,
-              `[TRACE FAILED] ${target} interference detected.`,
-              `[TRACE FAILED] ${target} location could not be verified.`,
-              `[TRACE FAILED] ${target} returned null coordinates.`
-            ];
-            print(failMsgs[Math.floor(Math.random() * failMsgs.length)], "error");
-          }
-        }, 2200);
+        const randomSector = sectors[Math.floor(Math.random()*sectors.length)];
+        const randomScanner = scanners[Math.floor(Math.random()*scanners.length)];
+        await traceProgress(target);
+        const success = Math.random() > 0.3;
+        if (success) {
+          removeTargetFromSector(target, traceLog[target]?.sector);
+          traceLog[target] = { sector: randomSector, scanner: randomScanner, ts: Date.now() };
+          indexTargetInSector(target, randomSector);
+          print(`[TRACE COMPLETE] ${target} last detected near Sector-${randomSector} on ${randomScanner} scanners.`);
+        } else print(`[TRACE FAILED] ${target} signal lost during scan.`, "error");
       }
 
-      else if (cmd.startsWith("echo ")) {
-        const msg = cmd.substring(5);
-        print(msg);
-      }
+      else if (cmd.startsWith("echo ")) print(cmd.substring(5));
+      else if (cmd === "create") { print("=== Field Report Creation ==="); print("Title> _ (Not implemented in this demo)", "warning"); }
 
-      else if (cmd === "create") {
-        print("=== Field Report Creation ===");
-        print("Title> _ (Not implemented in this demo)", "warning");
-      }
-
-      // ===== LOGIN =====
       else if (cmd === "login") {
         print("Username> ");
         const user = prompt("Username:");
         const pass = prompt("Password:");
-        if (user === "admin" && pass === "Az19882010@") {
-          devMode = true;
-          print("[ACCESS GRANTED] Developer clearance active.", "success");
-        } else {
-          loginAttempts++;
-          print("[ACCESS DENIED] Invalid credentials.", "error");
-          if (loginAttempts >= 3) {
-            loginDisabled = true;
-            print("[HQ ALERT] Multiple failed login attempts detected.", "error");
-            print("Login command disabled for this session.", "warning");
-          }
-        }
+        if (user === "admin" && pass === "Az19882010@") { devMode = true; print("[ACCESS GRANTED] Developer clearance active.", "success"); }
+        else { loginAttempts++; print("[ACCESS DENIED] Invalid credentials.", "error"); if(loginAttempts>=3){loginDisabled=true; print("[HQ ALERT] Multiple failed login attempts detected.", "error"); print("Login command disabled for this session.","warning");} }
       }
 
-      // ===== DEV COMMANDS =====
       else if (cmd.startsWith("add ") || cmd.startsWith("remove ") || cmd.startsWith("lock ") || cmd.startsWith("unlock ")) {
-        if (!devMode) return print("[ERROR] Command restricted: insufficient clearance.", "error");
-        const [c, id] = cmd.split(" ");
-        print(`[DEV] ${c.toUpperCase()} command executed for ${id.toUpperCase()}.`, "success");
+        if(!devMode) return print("[ERROR] Command restricted: insufficient clearance.","error");
+        const parts = parseCommandParts(cmd);
+        const c = parts[0], id = parts[1]?.toUpperCase() || "UNKNOWN";
+        print(`[DEV] ${c.toUpperCase()} command executed for ${id}.`, "success");
       }
 
-      else if (cmd === "system") {
-        print("ARCHIVE-ZER0 SYSTEM INFO:");
-        print("OS Build: A0-Terminal v0.3");
-        print("Database: Connected");
-        print("Security Layer: Active");
-        print("Network Sync: Stable");
+      else if (cmd === "sectors") {
+        if(!devMode) return print("[ERROR] Command restricted: insufficient clearance.","error");
+        print("KNOWN SECTORS (occupied):");
+        const keys = Object.keys(sectorIndex).sort();
+        if(keys.length===0) print(" - No sectors currently indexed.");
+        else keys.forEach(k=>sectorIndex[k].forEach(t=>{const info=traceLog[t]; print(`Sector-${k}: ${t} (scanner: ${info.scanner}, traced: ${new Date(info.ts).toUTCString()})`);} ));
       }
 
-      else if (cmd === "home") {
-        print("Returning to home directory...");
-        setTimeout(() => {
-          window.location.href = "index.html";
-        }, 800);
+      // ===== DEV RELOCATE COMMAND =====
+      else if(cmd.startsWith("relocate ")) {
+        if(!devMode) return print("[ERROR] Command restricted: insufficient clearance.","error");
+        const parts=parseCommandParts(cmd);
+        if(parts.length<3) return print("Usage: relocate <target> <sector>");
+        const target=parts[1].toUpperCase();
+        const sector=parts[2].padStart(2,"0");
+        removeTargetFromSector(target, traceLog[target]?.sector);
+        traceLog[target] = { sector, scanner:"manual", ts: Date.now() };
+        indexTargetInSector(target, sector);
+        print(`[DEV] ${target} relocated to Sector-${sector}.`, "success");
       }
 
-      else {
-        print("Unknown command.", "error");
-      }
+      else if(cmd==="system"){ print("ARCHIVE-ZER0 SYSTEM INFO:"); print("OS Build: A0-Terminal v0.3"); print("Database: Connected"); print("Security Layer: Active"); print("Network Sync: Stable"); }
+      else if(cmd==="home"){ print("Returning to home directory..."); setTimeout(()=>{window.location.href="index.html";},800); }
+      else print("Unknown command.","error");
     }
   </script>
 </body>
