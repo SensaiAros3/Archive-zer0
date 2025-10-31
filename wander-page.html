@@ -232,11 +232,34 @@
       }
 
       else if (cmd.startsWith("trace ")) {
-        const id = cmd.split(" ")[1]?.toUpperCase();
-        print(`Tracing ${id}...`);
-        setTimeout(() => {
-          print(`[TRACE COMPLETE] ${id} last detected near Sector-09 on thermal scanners.`);
-        }, 1300);
+  const target = cmd.substring(6).toUpperCase(); // everything after 'trace '
+  if (!target) return print("Usage: trace <target>");
+
+  const sectors = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
+  const scanners = ["thermal", "spectral", "quantum", "neural", "infrared", "gravimetric"];
+  const randomSector = sectors[Math.floor(Math.random() * sectors.length)];
+  const randomScanner = scanners[Math.floor(Math.random() * scanners.length)];
+
+  print(`Tracing ${target}...`);
+  setTimeout(() => print("Signal acquired..."), 700);
+  setTimeout(() => print("Analyzing signal pattern..."), 1300);
+
+  setTimeout(() => {
+    const success = Math.random() > 0.3; // 70% chance of success
+    if (success) {
+      print(`[TRACE COMPLETE] ${target} last detected near Sector-${randomSector} on ${randomScanner} scanners.`);
+    } else {
+      const failMsgs = [
+        `[TRACE FAILED] ${target} signal lost during scan.`,
+        `[TRACE FAILED] ${target} interference detected.`,
+        `[TRACE FAILED] ${target} location could not be verified.`,
+        `[TRACE FAILED] ${target} returned null coordinates.`
+      ];
+      print(failMsgs[Math.floor(Math.random() * failMsgs.length)], "error");
+    }
+  }, 2200);
+}
+
       }
 
       else if (cmd.startsWith("echo ")) {
@@ -311,4 +334,5 @@
   </script>
 </body>
 </html>
+
 
