@@ -1,0 +1,1 @@
+create shortcut for going to the text in terminal
