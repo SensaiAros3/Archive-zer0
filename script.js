@@ -117,6 +117,32 @@ async function handleCommand(cmd) {
       print("Ctrl + R — reverse search history");
       print("Click anywhere — focus input");
       break;
+case cmd === "random":
+  const TOTAL_ARCHIVES = 21; // change this to the total number of archives you have
+  const anomalies = Array.from({ length: TOTAL_ARCHIVES }, (_, i) =>
+    `z-${String(i + 1).padStart(3, "0")}.html`
+  );
+
+  (async () => {
+    const existing = [];
+    for (const file of anomalies) {
+      try {
+        const res = await fetch(file, { method: "HEAD" });
+        if (res.ok) existing.push(file);
+      } catch {}
+    }
+
+    if (existing.length > 0) {
+      const randomFile = existing[Math.floor(Math.random() * existing.length)];
+      print(`Opening ${randomFile.toUpperCase().replace(".HTML", "")}...`);
+      setTimeout(() => {
+        window.location.href = randomFile;
+      }, 800);
+    } else {
+      print("[ERROR] No accessible anomalies found.");
+    }
+  })();
+  break;
 
     case cmd === "clear":
       resetTerminal();
