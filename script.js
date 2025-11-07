@@ -123,10 +123,13 @@ async function handleCommand(cmd) {
       break;
 
     case cmd === "archives":
-      print(
-        "ARCHIVE FILES SUMMARY:<br>Z-001<br>Z-002<br>Z-003<br>Z-004<br>Z-005<br>Z-006<br>Z-007<br>Z-008<br>Z-009<br>Z-010<br>Z-011<br>Z-012<br>Z-013<br>Z-014<br>Z-015<br>Z-016<br>Z-017<br>Z-018<br>Z-019<br>Z-020<br>Z-021<br>Z-022<br>Z-023<br>Z-024<br>Z-025<br>"
-      );
-      break;
+  const totalArchives = 22; // change this to your total
+  let list = "";
+  for (let i = 1; i <= totalArchives; i++) {
+    list += `Z-${String(i).padStart(3, "0")}<br>`;
+  }
+  print(`ARCHIVE FILES SUMMARY:<br>${list}`);
+  break;
 
     case cmd.startsWith("view "):
       const parts = parseCommandParts(cmd);
