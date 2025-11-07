@@ -141,36 +141,9 @@ async function handleCommand(cmd) {
       }, 800);
       break;
 
-    case cmd === "random":
-      const anomalies = [
-        "z-001.html",
-        "z-002.html",
-        "z-003.html",
-        "z-004.html",
-        "z-005.html",
-        "z-006.html",
-        "z-007.html",
-        "z-008.html",
-        "z-009.html",
-      ];
-      (async () => {
-        const existing = [];
-        for (const file of anomalies) {
-          try {
-            const res = await fetch(file, { method: "HEAD" });
-            if (res.ok) existing.push(file);
-          } catch {}
-        }
-        if (existing.length > 0) {
-          const randomFile =
-            existing[Math.floor(Math.random() * existing.length)];
-          print(`Opening ${randomFile.toUpperCase().replace(".HTML", "")}...`);
-          setTimeout(() => {
-            window.location.href = randomFile;
-          }, 800);
-        } else print("[ERROR] No accessible anomalies found.");
-      })();
-      break;
+    const anomalies = Array.from({ length: 22 }, (_, i) =>
+  `z-${String(i + 1).padStart(3, "0")}.html`
+);
 
     case cmd === "report":
       print("https://forms.gle/3kxyMfkSWtN33vG46");
