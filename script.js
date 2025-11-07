@@ -124,7 +124,7 @@ async function handleCommand(cmd) {
 
     case cmd === "archives":
       print(
-        "ARCHIVE FILES SUMMARY:<br>Z-001<br>Z-002<br>Z-003<br>Z-004<br>Z-005<br>Z-006<br>Z-007<br>Z-008<br>Z-009<br>Z-010"
+        "ARCHIVE FILES SUMMARY:<br>Z-001<br>Z-002<br>Z-003<br>Z-004<br>Z-005<br>Z-006<br>Z-007<br>Z-008<br>Z-009<br>Z-010<br>Z-011<br>Z-012<br>Z-013<br>Z-014<br>Z-015<br>Z-016<br>Z-017<br>Z-018<br>Z-019<br>Z-020<br>Z-021<br>Z-022<br>Z-023<br>Z-024<br>Z-025<br>"
       );
       break;
 
@@ -170,7 +170,7 @@ async function handleCommand(cmd) {
       break;
 
     case cmd === "report":
-      print("No active reports found.");
+      print("https://forms.gle/3kxyMfkSWtN33vG46");
       break;
 
     case cmd.startsWith("scan "):
@@ -228,49 +228,45 @@ async function handleCommand(cmd) {
       print(`Current system time: ${new Date().toUTCString()}`);
       break;
 
-    case cmd.startsWith("trace "):
-      const target = cmd.substring(6).trim().toUpperCase();
-      if (!target) return print("Usage: trace <target>");
-      const sectors = [
-        "01",
-        "02",
-        "03",
-        "04",
-        "05",
-        "06",
-        "07",
-        "08",
-        "09",
-        "10",
-        "11",
-        "12",
-      ];
-      const scanners = [
-        "thermal",
-        "spectral",
-        "quantum",
-        "neural",
-        "infrared",
-        "gravimetric",
-      ];
-      const randomSector = sectors[Math.floor(Math.random() * sectors.length)];
-      const randomScanner =
-        scanners[Math.floor(Math.random() * scanners.length)];
-      await traceProgress(target);
-      const success = Math.random() > 0.3;
-      if (success) {
-        removeTargetFromSector(target, traceLog[target]?.sector);
-        traceLog[target] = {
-          sector: randomSector,
-          scanner: randomScanner,
-          ts: Date.now(),
-        };
-        indexTargetInSector(target, randomSector);
-        print(
-          `[TRACE COMPLETE] ${target} last detected near Sector-${randomSector} on ${randomScanner} scanners.`
-        );
-      } else print(`[TRACE FAILED] ${target} signal lost during scan.`, "error");
-      break;
+   case cmd.startsWith("trace "):
+  const targetRaw = cmd.substring(6).trim().toUpperCase();
+  if (!targetRaw) return print("Usage: trace <target>");
+
+  // Only allow valid archives Z-001 → Z-021
+  const validArchives = Array.from({ length: 21 }, (_, i) =>
+    `Z-${String(i + 1).padStart(3, "0")}`
+  );
+
+  if (!validArchives.includes(targetRaw)) {
+    return print(`[ERROR] ${targetRaw} is not a recognized archive.`, "error");
+  }
+
+  const sectors = [
+    "01","02","03","04","05","06","07","08","09","10","11","12"
+  ];
+  const scanners = [
+    "thermal","spectral","quantum","neural","infrared","gravimetric"
+  ];
+  const randomSector = sectors[Math.floor(Math.random() * sectors.length)];
+  const randomScanner = scanners[Math.floor(Math.random() * scanners.length)];
+
+  await traceProgress(targetRaw);
+
+  const success = Math.random() > 0.3;
+  if (success) {
+    removeTargetFromSector(targetRaw, traceLog[targetRaw]?.sector);
+    traceLog[targetRaw] = {
+      sector: randomSector,
+      scanner: randomScanner,
+      ts: Date.now(),
+    };
+    indexTargetInSector(targetRaw, randomSector);
+    print(
+      `[TRACE COMPLETE] ${targetRaw} last detected near Sector-${randomSector} on ${randomScanner} scanners.`
+    );
+  } else print(`[TRACE FAILED] ${targetRaw} signal lost during scan.`, "error");
+  break;
+
 
     case cmd.startsWith("echo "):
       print(cmd.substring(5));
