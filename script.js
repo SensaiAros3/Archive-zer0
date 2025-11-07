@@ -12,6 +12,10 @@ let loginDisabled = false;
 const traceLog = {}; // Stores traced targets with sector, scanner, timestamp
 const sectorIndex = {}; // Stores sector -> list of targets
 
+// ===== Command History =====
+let commandHistory = [];
+let historyIndex = -1;
+
 // ===== Utility Functions =====
 function print(text, cls = "") {
   const p = document.createElement("p");
@@ -263,7 +267,37 @@ input.addEventListener("keydown", async function(event){
     if(!command) return;
     print("> " + command);
     await handleCommand(command.toLowerCase());
+    // Add to history
+    commandHistory.push(command);
+    historyIndex = commandHistory.length;
     input.value = "";
+  }
+});
+
+// ===== Global Key Listener (for /, ↑, ↓) =====
+document.addEventListener("keydown", (e) => {
+  // Focus input when pressing '/'
+  if (e.key === "/") {
+    e.preventDefault();
+    input.focus();
+  }
+
+  // Navigate command history
+  if (e.key === "ArrowUp") {
+    if (historyIndex > 0) {
+      historyIndex--;
+      input.value = commandHistory[historyIndex] || "";
+    }
+    e.preventDefault();
+  } else if (e.key === "ArrowDown") {
+    if (historyIndex < commandHistory.length - 1) {
+      historyIndex++;
+      input.value = commandHistory[historyIndex] || "";
+    } else {
+      historyIndex = commandHistory.length;
+      input.value = "";
+    }
+    e.preventDefault();
   }
 });
 
