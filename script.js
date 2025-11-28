@@ -1,19 +1,40 @@
 // terminal.js — ARCHIVE-ZER0 TERMINAL SYSTEM (Full Edition)
 // Font: Consolas
-// Version: 3.1 — Full dynamic archives, fixed trace, Linux-style controls
-
-// ===== CONFIG =====
-const TOTAL_ARCHIVES = 21; // 🔥 Change this number to update all archives dynamically
-const ARCHIVE_PREFIX = "Z-"; // Prefix for archive IDs (Z-001, Z-002, ...)
+// Version: 3.2 — Improved entity management & dev fixes
 
 // ===== DOM Elements =====
 const terminal = document.getElementById("terminal");
 const input = document.getElementById("command");
 
-// ===== State Variables =====
+// ===== Global Variables =====
 let devMode = false;
 let loginAttempts = 0;
 let loginDisabled = false;
+
+// ===== Entity / Archive Management =====
+const ARCHIVES = [
+  "Z-001",
+  "Z-002",
+  "Z-003",
+  "Z-004",
+  "Z-005",
+  "Z-006",
+  "Z-007",
+  "Z-008",
+  "Z-009",
+  "Z-010",
+  "Z-011",
+  "Z-012",
+  "Z-013",
+  "Z-014",
+  "Z-015",
+  "Z-016",
+  "Z-017",
+  "Z-018",
+  "Z-019",
+  "Z-020",
+  "Z-021"
+];
 
 const traceLog = {};
 const sectorIndex = {};
@@ -35,7 +56,7 @@ function print(text, cls = "") {
 
 function resetTerminal() {
   terminal.innerHTML =
-    "<p>ARCHIVE-ZER0 SYSTEM v0.3</p><p>Type <b>help</b> to view available commands.</p>";
+    "<p>ARCHIVE-ZER0 SYSTEM v3.2</p><p>Type <b>help</b> to view available commands.</p>";
 }
 
 function parseCommandParts(cmd) {
@@ -44,8 +65,7 @@ function parseCommandParts(cmd) {
 
 function indexTargetInSector(target, sector) {
   if (!sectorIndex[sector]) sectorIndex[sector] = [];
-  if (!sectorIndex[sector].includes(target))
-    sectorIndex[sector].push(target);
+  if (!sectorIndex[sector].includes(target)) sectorIndex[sector].push(target);
 }
 
 function removeTargetFromSector(target, prevSector) {
@@ -74,7 +94,6 @@ async function handleCommand(cmd) {
   }
 
   switch (true) {
-    // ===== HELP =====
     case cmd === "help":
       print(
         `Available commands:<br>
@@ -109,7 +128,6 @@ async function handleCommand(cmd) {
       }
       break;
 
-    // ===== CONTROLS =====
     case cmd === "controls":
       print(`=== TERMINAL CONTROLS ===`);
       print("/ — focus input");
@@ -124,39 +142,29 @@ async function handleCommand(cmd) {
       print("Click anywhere — focus input");
       break;
 
-    // ===== CLEAR =====
     case cmd === "clear":
       resetTerminal();
       break;
 
-    // ===== ARCHIVES =====
     case cmd === "archives":
-      let list = "";
-      for (let i = 1; i <= TOTAL_ARCHIVES; i++) {
-        list += `${ARCHIVE_PREFIX}${String(i).padStart(3, "0")}<br>`;
-      }
-      print(`ARCHIVE FILES SUMMARY:<br>${list}`);
+      print(`ARCHIVE FILES SUMMARY:<br>${ARCHIVES.join("<br>")}`);
       break;
 
-    // ===== VIEW =====
     case cmd.startsWith("view "):
       const parts = parseCommandParts(cmd);
       const id = parts[1]?.toUpperCase();
-      if (!id) return print("Usage: view <ID>");
+      if (!id || !ARCHIVES.includes(id)) return print("Usage: view <ID>");
       print(`Opening ${id}...`);
       setTimeout(() => {
         window.location.href = `${id.toLowerCase()}.html`;
       }, 800);
       break;
 
-    // ===== RANDOM =====
     case cmd === "random":
-      const anomalies = Array.from({ length: TOTAL_ARCHIVES }, (_, i) =>
-        `${ARCHIVE_PREFIX.toLowerCase()}${String(i + 1).padStart(3, "0")}.html`
-      );
+      const available = ARCHIVES.map(a => a.toLowerCase() + ".html");
       (async () => {
         const existing = [];
-        for (const file of anomalies) {
+        for (const file of available) {
           try {
             const res = await fetch(file, { method: "HEAD" });
             if (res.ok) existing.push(file);
@@ -165,9 +173,7 @@ async function handleCommand(cmd) {
         if (existing.length > 0) {
           const randomFile =
             existing[Math.floor(Math.random() * existing.length)];
-          print(
-            `Opening ${randomFile.toUpperCase().replace(".HTML", "")}...`
-          );
+          print(`Opening ${randomFile.toUpperCase().replace(".HTML", "")}...`);
           setTimeout(() => {
             window.location.href = randomFile;
           }, 800);
@@ -175,12 +181,10 @@ async function handleCommand(cmd) {
       })();
       break;
 
-    // ===== REPORT =====
     case cmd === "report":
       print("No active reports found.");
       break;
 
-    // ===== SCAN =====
     case cmd.startsWith("scan "):
       const sectorParts = parseCommandParts(cmd);
       const sector = sectorParts[1]?.toUpperCase();
@@ -205,7 +209,6 @@ async function handleCommand(cmd) {
       }, 1200);
       break;
 
-    // ===== DECRYPT =====
     case cmd.startsWith("decrypt "):
       const decParts = parseCommandParts(cmd);
       const decId = decParts[1]?.toUpperCase();
@@ -221,72 +224,52 @@ async function handleCommand(cmd) {
       );
       break;
 
-    // ===== STATUS =====
     case cmd === "status":
       print(
         "HQ STATUS:<br>Active anomalies: 6<br>Pending reports: 2<br>New alerts: 1 (Crimson)<br>System Integrity: STABLE"
       );
       break;
 
-    // ===== ALERTS =====
     case cmd === "alerts":
       print(
         "<span class='error'>[ALERT] Z-003 activity spike detected in SEC-07</span>"
       );
       break;
 
-    // ===== TIME =====
     case cmd === "time":
       print(`Current system time: ${new Date().toUTCString()}`);
       break;
 
-    // ===== TRACE =====
     case cmd.startsWith("trace "):
-      const targetRaw = cmd.substring(6).trim().toUpperCase();
-      if (!targetRaw) return print("Usage: trace <target>");
-
-      // Only allow valid archives
-      const validArchives = Array.from({ length: TOTAL_ARCHIVES }, (_, i) =>
-        `${ARCHIVE_PREFIX}${String(i + 1).padStart(3, "0")}`
-      );
-      if (!validArchives.includes(targetRaw)) {
-        return print(`[ERROR] ${targetRaw} is not a recognized archive.`, "error");
-      }
-
+      const target = cmd.substring(6).trim().toUpperCase();
+      if (!target) return print("Usage: trace <target>");
       const sectors = ["01","02","03","04","05","06","07","08","09","10","11","12"];
       const scanners = ["thermal","spectral","quantum","neural","infrared","gravimetric"];
       const randomSector = sectors[Math.floor(Math.random() * sectors.length)];
       const randomScanner = scanners[Math.floor(Math.random() * scanners.length)];
-
-      await traceProgress(targetRaw);
-
+      await traceProgress(target);
       const success = Math.random() > 0.3;
       if (success) {
-        removeTargetFromSector(targetRaw, traceLog[targetRaw]?.sector);
-        traceLog[targetRaw] = {
+        removeTargetFromSector(target, traceLog[target]?.sector);
+        traceLog[target] = {
           sector: randomSector,
           scanner: randomScanner,
           ts: Date.now(),
         };
-        indexTargetInSector(targetRaw, randomSector);
-        print(
-          `[TRACE COMPLETE] ${targetRaw} last detected near Sector-${randomSector} on ${randomScanner} scanners.`
-        );
-      } else print(`[TRACE FAILED] ${targetRaw} signal lost during scan.`, "error");
+        indexTargetInSector(target, randomSector);
+        print(`[TRACE COMPLETE] ${target} last detected near Sector-${randomSector} on ${randomScanner} scanners.`);
+      } else print(`[TRACE FAILED] ${target} signal lost during scan.`, "error");
       break;
 
-    // ===== ECHO =====
     case cmd.startsWith("echo "):
       print(cmd.substring(5));
       break;
 
-    // ===== CREATE =====
     case cmd === "create":
       print("=== Field Report Creation ===");
       print("Title> _ (Not implemented in this demo)", "warning");
       break;
 
-    // ===== LOGIN =====
     case cmd === "login":
       const user = prompt("Username:");
       const pass = prompt("Password:");
@@ -304,32 +287,19 @@ async function handleCommand(cmd) {
       }
       break;
 
-    // ===== DEV COMMANDS =====
     case cmd.startsWith("add ") ||
       cmd.startsWith("remove ") ||
       cmd.startsWith("lock ") ||
       cmd.startsWith("unlock "):
-      if (!devMode)
-        return print(
-          "[ERROR] Command restricted: insufficient clearance.",
-          "error"
-        );
+      if (!devMode) return print("[ERROR] Command restricted: insufficient clearance.", "error");
       const devParts = parseCommandParts(cmd);
-      print(
-        `[DEV] ${devParts[0].toUpperCase()} command executed for ${
-          devParts[1]?.toUpperCase() || "UNKNOWN"
-        }.`,
-        "success"
-      );
+      const sanitizedTarget = devParts[1]?.toUpperCase() || "UNKNOWN";
+      const action = devParts[0].toUpperCase();
+      print(`[DEV] ${action} command executed for ${sanitizedTarget}.`, "success");
       break;
 
-    // ===== SECTORS =====
     case cmd === "sectors":
-      if (!devMode)
-        return print(
-          "[ERROR] Command restricted: insufficient clearance.",
-          "error"
-        );
+      if (!devMode) return print("[ERROR] Command restricted: insufficient clearance.", "error");
       print("KNOWN SECTORS (occupied):");
       const keys = Object.keys(sectorIndex).sort();
       if (keys.length === 0) print(" - No sectors currently indexed.");
@@ -337,59 +307,43 @@ async function handleCommand(cmd) {
         keys.forEach((k) =>
           sectorIndex[k].forEach((t) => {
             const info = traceLog[t];
-            print(
-              `Sector-${k}: ${t} (scanner: ${info.scanner}, traced: ${new Date(
-                info.ts
-              ).toUTCString()})`
-            );
+            print(`Sector-${k}: ${t} (scanner: ${info.scanner}, traced: ${new Date(info.ts).toUTCString()})`);
           })
         );
       break;
 
-    // ===== RELOCATE =====
     case cmd.startsWith("relocate "):
-      if (!devMode)
-        return print(
-          "[ERROR] Command restricted: insufficient clearance.",
-          "error"
-        );
+      if (!devMode) return print("[ERROR] Command restricted: insufficient clearance.", "error");
       const relocateParts = parseCommandParts(cmd);
-      if (relocateParts.length < 3)
-        return print("Usage: relocate <target> <sector>");
+      if (relocateParts.length < 3) return print("Usage: relocate <target> <sector>");
       const rTarget = relocateParts[1].toUpperCase();
-      const rSector = relocateParts[2].padStart(2, "0");
+      const rSector = relocateParts[2].padStart(2,"0");
       removeTargetFromSector(rTarget, traceLog[rTarget]?.sector);
       traceLog[rTarget] = { sector: rSector, scanner: "manual", ts: Date.now() };
       indexTargetInSector(rTarget, rSector);
       print(`[DEV] ${rTarget} relocated to Sector-${rSector}.`, "success");
       break;
 
-    // ===== SYSTEM =====
     case cmd === "system":
       print("ARCHIVE-ZER0 SYSTEM INFO:");
-      print("OS Build: A0-Terminal v0.3");
+      print("OS Build: A0-Terminal v3.2");
       print("Database: Connected");
       print("Security Layer: Active");
       print("Network Sync: Stable");
       break;
 
-    // ===== HOME =====
     case cmd === "home":
       print("Returning to home directory...");
-      setTimeout(() => {
-        window.location.href = "index.html";
-      }, 800);
+      setTimeout(() => { window.location.href = "index.html"; }, 800);
       break;
 
-    // ===== DEFAULT =====
     default:
       print("Unknown command.", "error");
   }
 }
 
-// ===== INPUT LISTENER =====
-input.addEventListener("keydown", async function (e) {
-  // ENTER
+// ===== Input Listener =====
+input.addEventListener("keydown", async function(e) {
   if (e.key === "Enter") {
     e.preventDefault();
     const command = input.value.trim();
@@ -400,62 +354,41 @@ input.addEventListener("keydown", async function (e) {
     historyIndex = commandHistory.length;
     input.value = "";
     reverseSearchActive = false;
-  }
-
-  // TAB autocomplete
-  else if (e.key === "Tab") {
+  } else if (e.key === "Tab") {
     e.preventDefault();
-    const cmds = [
-      "help","login","create","archives","view","report","scan","decrypt",
-      "status","alerts","time","trace","echo","clear","controls","system","random","home"
-    ];
-    const match = cmds.find((c) => c.startsWith(input.value));
+    const cmds = ["help","login","create","archives","view","report","scan","decrypt","status","alerts","time","trace","echo","clear","controls","system","random","home"];
+    const match = cmds.find(c => c.startsWith(input.value));
     if (match) input.value = match;
-  }
-
-  // CTRL shortcuts
-  else if (e.ctrlKey) {
-    switch (e.key.toLowerCase()) {
+  } else if (e.ctrlKey) {
+    switch(e.key.toLowerCase()) {
       case "l": e.preventDefault(); resetTerminal(); break;
-      case "c": e.preventDefault(); print("^C"); input.value = ""; break;
-      case "u": e.preventDefault(); input.value = ""; break;
+      case "c": e.preventDefault(); print("^C"); input.value=""; break;
+      case "u": e.preventDefault(); input.value=""; break;
       case "a": e.preventDefault(); input.selectionStart = input.selectionEnd = 0; break;
       case "e": e.preventDefault(); input.selectionStart = input.selectionEnd = input.value.length; break;
-      case "r": e.preventDefault(); reverseSearchActive = true; reverseSearchQuery = ""; reverseSearchMatch = ""; print("(reverse-i-search)`': "); break;
+      case "r": e.preventDefault(); reverseSearchActive=true; reverseSearchQuery=""; reverseSearchMatch=""; print("(reverse-i-search)`': "); break;
     }
-  }
-
-  // REVERSE SEARCH
-  else if (reverseSearchActive) {
-    if (e.key === "Escape") { reverseSearchActive = false; print(""); }
-    else if (e.key === "Backspace") { e.preventDefault(); reverseSearchQuery = reverseSearchQuery.slice(0, -1); }
-    else if (e.key.length === 1) { e.preventDefault(); reverseSearchQuery += e.key; }
-    else if (e.key === "Enter") { e.preventDefault(); if (reverseSearchMatch) input.value = reverseSearchMatch; reverseSearchActive = false; }
-
-    if (reverseSearchActive) {
-      const match = commandHistory.slice().reverse().find((cmd) => cmd.includes(reverseSearchQuery));
+  } else if (reverseSearchActive) {
+    if(e.key==="Escape"){ reverseSearchActive=false; print(""); }
+    else if(e.key==="Backspace"){ e.preventDefault(); reverseSearchQuery=reverseSearchQuery.slice(0,-1); }
+    else if(e.key.length===1){ e.preventDefault(); reverseSearchQuery+=e.key; }
+    else if(e.key==="Enter"){ e.preventDefault(); if(reverseSearchMatch) input.value=reverseSearchMatch; reverseSearchActive=false; }
+    if(reverseSearchActive){
+      const match = commandHistory.slice().reverse().find(c=>c.includes(reverseSearchQuery));
       reverseSearchMatch = match || "";
-      const searchDisplay = `(reverse-i-search)\`${reverseSearchQuery}': ${reverseSearchMatch}`;
-      print(searchDisplay);
+      print(`(reverse-i-search)\`${reverseSearchQuery}': ${reverseSearchMatch}`);
     }
   }
 });
 
-// ===== GLOBAL SHORTCUTS =====
-document.addEventListener("keydown", (e) => {
-  if (e.key === "/") { e.preventDefault(); input.focus(); }
-  if (e.key === "ArrowUp") {
-    if (historyIndex > 0) { historyIndex--; input.value = commandHistory[historyIndex] || ""; }
-    e.preventDefault();
-  } else if (e.key === "ArrowDown") {
-    if (historyIndex < commandHistory.length - 1) { historyIndex++; input.value = commandHistory[historyIndex] || ""; }
-    else { historyIndex = commandHistory.length; input.value = ""; }
-    e.preventDefault();
-  }
+// ===== Global Shortcuts =====
+document.addEventListener("keydown",(e)=>{
+  if(e.key==="/"){ e.preventDefault(); input.focus(); }
+  if(e.key==="ArrowUp"){ historyIndex>0 ? historyIndex-- : null; input.value=commandHistory[historyIndex]||""; e.preventDefault(); }
+  if(e.key==="ArrowDown"){ historyIndex<commandHistory.length-1 ? historyIndex++ : historyIndex=commandHistory.length; input.value=commandHistory[historyIndex]||""; e.preventDefault(); }
 });
+document.addEventListener("click",()=>input.focus());
+window.onload=()=>input.focus();
 
-document.addEventListener("click", () => input.focus());
-window.onload = () => input.focus();
-
-// ===== INITIALIZE =====
+// ===== Initialize =====
 resetTerminal();
