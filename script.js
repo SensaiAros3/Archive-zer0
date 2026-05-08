@@ -1,6 +1,6 @@
 // ===== SUPABASE =====
 const supabaseUrl = "https://gqgyaigsieynxgxgzdvm.supabase.co"
-const supabaseKey = "YOUR_ANON_KEY"
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxZ3lhaWdzaWV5bnhneGd6ZHZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczNjczNDYsImV4cCI6MjA5Mjk0MzM0Nn0.UkTumgRaj7ModAUeE_Fg5vTA2VL0Hug-4lo_DUSgRNM"
 
 const supabaseClient = supabase.createClient(
   supabaseUrl,
