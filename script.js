@@ -1,34 +1,36 @@
-const supabaseUrl = "https://gqgyaigsieynxgxgzdvm.supabase.co/"
-
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxZ3lhaWdzaWV5bnhneGd6ZHZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczNjczNDYsImV4cCI6MjA5Mjk0MzM0Nn0.UkTumgRaj7ModAUeE_Fg5vTA2VL0Hug-4lo_DUSgRNM"
+// ===== SUPABASE =====
+const supabaseUrl = "https://gqgyaigsieynxgxgzdvm.supabase.co"
+const supabaseKey = "YOUR_ANON_KEY"
 
 const supabaseClient = supabase.createClient(
   supabaseUrl,
   supabaseKey
 )
 
-async function testDB() {
-  const { data, error } = await supabaseClient
-    .from("anomalies")
-    .select("*")
+// ===== DOM =====
+const terminal = document.getElementById("terminal")
+const input = document.getElementById("command")
 
-  console.log(data, error)
+// ===== STATE =====
+let ARCHIVES = []
+
+// ===== UI =====
+function print(text, cls = "") {
+  const p = document.createElement("p")
+  p.className = cls
+  p.textContent = text
+  terminal.appendChild(p)
+  terminal.scrollTop = terminal.scrollHeight
 }
 
-testDB()
+function resetTerminal() {
+  terminal.innerHTML = `
+    <p>ARCHIVE-ZER0 SYSTEM v3.2</p>
+    <p>Type help to view available commands.</p>
+  `
+}
 
-// terminal.js — ARCHIVE-ZER0 TERMINAL SYSTEM (Full Edition)
-// Font: Consolas
-// Version: 3.2 — Improved entity management & dev fixes
-
-// ===== DOM Elements =====
-const terminal = document.getElementById("terminal");
-const input = document.getElementById("command");
-
-// ===== Global Variables =====
-let devMode = false;
-let loginAttempts = 0;
-let loginDisabled = false;
+// ===== LOAD DATABASE =====
 async function loadArchives() {
   const { data, error } = await supabaseClient
     .from("anomalies")
@@ -39,368 +41,83 @@ async function loadArchives() {
     return
   }
 
-  ARCHIVES = data.map(item => item.code_name)
+  ARCHIVES = data.map(a => a.code_name.toLowerCase())
 
   print(`[SYSTEM] ${ARCHIVES.length} anomalies loaded.`, "success")
 }
 
-// ===== Entity / Archive Management =====
-let archives = []
-
-const traceLog = {};
-const sectorIndex = {};
-
-// ===== Command History =====
-let commandHistory = [];
-let historyIndex = -1;
-let reverseSearchActive = false;
-let reverseSearchQuery = "";
-let reverseSearchMatch = "";
-
-// ===== Utility Functions =====
-function print(text, cls = "") {
-  const p = document.createElement("p");
-  p.innerHTML = cls ? `<span class="${cls}">${text}</span>` : text;
-  terminal.appendChild(p);
-  terminal.scrollTop = terminal.scrollHeight;
-}
-
-function resetTerminal() {
-  terminal.innerHTML =
-    "<p>ARCHIVE-ZER0 SYSTEM v3.2</p><p>Type <b>help</b> to view available commands.</p>";
-}
-
-function parseCommandParts(cmd) {
-  return cmd.split(" ").filter(Boolean);
-}
-
-function indexTargetInSector(target, sector) {
-  if (!sectorIndex[sector]) sectorIndex[sector] = [];
-  if (!sectorIndex[sector].includes(target)) sectorIndex[sector].push(target);
-}
-
-function removeTargetFromSector(target, prevSector) {
-  if (!prevSector) return;
-  const arr = sectorIndex[prevSector];
-  if (!arr) return;
-  const idx = arr.indexOf(target);
-  if (idx !== -1) arr.splice(idx, 1);
-  if (arr.length === 0) delete sectorIndex[prevSector];
-}
-
-async function traceProgress(target) {
-  const totalSteps = 10;
-  for (let i = 1; i <= totalSteps; i++) {
-    const progress = "▓".repeat(i) + "░".repeat(totalSteps - i);
-    print(`Tracing ${target} [${progress}] ${i * 10}%`);
-    await new Promise((res) => setTimeout(res, 120));
-  }
-}
-
-// ===== Command Handlers =====
+// ===== COMMAND HANDLER =====
 async function handleCommand(cmd) {
-  if (loginDisabled && cmd.startsWith("login")) {
-    print("[ALERT] Login system temporarily disabled.", "error");
-    return;
+  cmd = cmd.trim().toLowerCase()
+
+  // HELP
+  if (cmd === "help") {
+    print("help")
+    print("clear")
+    print("archives")
+    print("view <id>")
+    return
   }
 
-  switch (true) {
-    case cmd === "help":
-      print(
-        `Available commands:<br>
-        random - opens a random entity<br>
-        system - shows active status<br>
-        help — show available commands<br>
-        login — authenticate<br>
-        create — create new field report<br>
-        archives — show archive summaries<br>
-        view &lt;ID&gt; — open archive/log<br>
-        report — list submitted reports<br>
-        scan &lt;sector&gt; — simulate sector scan<br>
-        decrypt &lt;ID&gt; — attempt decrypt<br>
-        status — show HQ/terminal status<br>
-        alerts — list active alerts<br>
-        time — show in-universe time<br>
-        trace &lt;target&gt; — trace anomaly<br>
-        echo &lt;msg&gt; — output message<br>
-        clear — clear terminal<br>
-        controls — list all keyboard shortcuts`
-      );
-      if (devMode) {
-        print(
-          `<br><b>Developer Commands:</b><br>
-          add &lt;ID&gt; — add new archive<br>
-          remove &lt;ID&gt; — remove archive<br>
-          lock &lt;ID&gt; — lock file<br>
-          unlock &lt;ID&gt; — unlock file<br>
-          sectors — reveal occupied sectors<br>
-          relocate &lt;target&gt; &lt;sector&gt; — move target to new sector`
-        );
-      }
-      break;
-
-    case cmd === "controls":
-      print(`=== TERMINAL CONTROLS ===`);
-      print("/ — focus input");
-      print("↑ / ↓ — navigate command history");
-      print("Tab — autocomplete commands");
-      print("Ctrl + L — clear screen");
-      print("Ctrl + C — cancel current line");
-      print("Ctrl + U — clear current input");
-      print("Ctrl + A — move cursor to start");
-      print("Ctrl + E — move cursor to end");
-      print("Ctrl + R — reverse search history");
-      print("Click anywhere — focus input");
-      break;
-
-    case cmd === "clear":
-      resetTerminal();
-      break;
-
-    case cmd === "archives":
-      print(`ARCHIVE FILES SUMMARY:<br>${ARCHIVES.join("<br>")}`);
-      break;
-
-    case cmd.startsWith("view "):
-      const parts = parseCommandParts(cmd);
-      const id = parts[1]?.toUpperCase();
-      if (!id || !ARCHIVES.includes(id)) return print("Usage: view <ID>");
-      print(`Opening ${id}...`);
-      setTimeout(() => {
-        window.location.href = `${id.toLowerCase()}.html`;
-      }, 800);
-      break;
-
-    case cmd === "random":
-      const available = ARCHIVES.map(a => a.toLowerCase() + ".html");
-      (async () => {
-        const existing = [];
-        for (const file of available) {
-          try {
-            const res = await fetch(file, { method: "HEAD" });
-            if (res.ok) existing.push(file);
-          } catch {}
-        }
-        if (existing.length > 0) {
-          const randomFile =
-            existing[Math.floor(Math.random() * existing.length)];
-          print(`Opening ${randomFile.toUpperCase().replace(".HTML", "")}...`);
-          setTimeout(() => {
-            window.location.href = randomFile;
-          }, 800);
-        } else print("[ERROR] No accessible anomalies found.");
-      })();
-      break;
-
-    case cmd === "report":
-      print("No active reports found.");
-      break;
-
-    case cmd.startsWith("scan "):
-      const sectorParts = parseCommandParts(cmd);
-      const sector = sectorParts[1]?.toUpperCase();
-      if (!sector) return print("Usage: scan <sector>");
-      const sectorKey = sector.padStart(2, "0");
-      print(`Initiating scan on ${sectorKey}...`);
-      setTimeout(() => {
-        const found = sectorIndex[sectorKey];
-        if (found && found.length > 0) {
-          print(`[SCAN COMPLETE] Detected ${found.length} object(s) in ${sectorKey}:`);
-          found.forEach((t) => {
-            const info = traceLog[t];
-            if (info)
-              print(
-                ` - ${t} (last traced on ${info.scanner} scanners at ${new Date(
-                  info.ts
-                ).toUTCString()})`
-              );
-            else print(` - ${t} (unknown metadata)`);
-          });
-        } else print(`[SCAN COMPLETE] No anomalies detected in ${sectorKey}.`);
-      }, 1200);
-      break;
-
-    case cmd.startsWith("decrypt "):
-      const decParts = parseCommandParts(cmd);
-      const decId = decParts[1]?.toUpperCase();
-      if (!decId) return print("Usage: decrypt <ID>");
-      print(`[DECRYPT] Attempting to unlock ${decId}...`);
-      setTimeout(
-        () =>
-          print(
-            `[ERROR] File ${decId} is locked with level-4 clearance.`,
-            "error"
-          ),
-        1200
-      );
-      break;
-
-    case cmd === "status":
-      print(
-        "HQ STATUS:<br>Active anomalies: 6<br>Pending reports: 2<br>New alerts: 1 (Crimson)<br>System Integrity: STABLE"
-      );
-      break;
-
-    case cmd === "alerts":
-      print(
-        "<span class='error'>[ALERT] Z-003 activity spike detected in SEC-07</span>"
-      );
-      break;
-
-    case cmd === "time":
-      print(`Current system time: ${new Date().toUTCString()}`);
-      break;
-
-    case cmd.startsWith("trace "):
-      const target = cmd.substring(6).trim().toUpperCase();
-      if (!target) return print("Usage: trace <target>");
-      const sectors = ["01","02","03","04","05","06","07","08","09","10","11","12"];
-      const scanners = ["thermal","spectral","quantum","neural","infrared","gravimetric"];
-      const randomSector = sectors[Math.floor(Math.random() * sectors.length)];
-      const randomScanner = scanners[Math.floor(Math.random() * scanners.length)];
-      await traceProgress(target);
-      const success = Math.random() > 0.3;
-      if (success) {
-        removeTargetFromSector(target, traceLog[target]?.sector);
-        traceLog[target] = {
-          sector: randomSector,
-          scanner: randomScanner,
-          ts: Date.now(),
-        };
-        indexTargetInSector(target, randomSector);
-        print(`[TRACE COMPLETE] ${target} last detected near Sector-${randomSector} on ${randomScanner} scanners.`);
-      } else print(`[TRACE FAILED] ${target} signal lost during scan.`, "error");
-      break;
-
-    case cmd.startsWith("echo "):
-      print(cmd.substring(5));
-      break;
-
-    case cmd === "create":
-      print("=== Field Report Creation ===");
-      print("Title> _ (Not implemented in this demo)", "warning");
-      break;
-
-    case cmd === "login":
-      const user = prompt("Username:");
-      const pass = prompt("Password:");
-      if (user === "admin" && pass === "Az19882010@") {
-        devMode = true;
-        print("[ACCESS GRANTED] Developer clearance active.", "success");
-      } else {
-        loginAttempts++;
-        print("[ACCESS DENIED] Invalid credentials.", "error");
-        if (loginAttempts >= 3) {
-          loginDisabled = true;
-          print("[HQ ALERT] Multiple failed login attempts detected.", "error");
-          print("Login command disabled for this session.", "warning");
-        }
-      }
-      break;
-
-    case cmd.startsWith("add ") ||
-      cmd.startsWith("remove ") ||
-      cmd.startsWith("lock ") ||
-      cmd.startsWith("unlock "):
-      if (!devMode) return print("[ERROR] Command restricted: insufficient clearance.", "error");
-      const devParts = parseCommandParts(cmd);
-      const sanitizedTarget = devParts[1]?.toUpperCase() || "UNKNOWN";
-      const action = devParts[0].toUpperCase();
-      print(`[DEV] ${action} command executed for ${sanitizedTarget}.`, "success");
-      break;
-
-    case cmd === "sectors":
-      if (!devMode) return print("[ERROR] Command restricted: insufficient clearance.", "error");
-      print("KNOWN SECTORS (occupied):");
-      const keys = Object.keys(sectorIndex).sort();
-      if (keys.length === 0) print(" - No sectors currently indexed.");
-      else
-        keys.forEach((k) =>
-          sectorIndex[k].forEach((t) => {
-            const info = traceLog[t];
-            print(`Sector-${k}: ${t} (scanner: ${info.scanner}, traced: ${new Date(info.ts).toUTCString()})`);
-          })
-        );
-      break;
-
-    case cmd.startsWith("relocate "):
-      if (!devMode) return print("[ERROR] Command restricted: insufficient clearance.", "error");
-      const relocateParts = parseCommandParts(cmd);
-      if (relocateParts.length < 3) return print("Usage: relocate <target> <sector>");
-      const rTarget = relocateParts[1].toUpperCase();
-      const rSector = relocateParts[2].padStart(2,"0");
-      removeTargetFromSector(rTarget, traceLog[rTarget]?.sector);
-      traceLog[rTarget] = { sector: rSector, scanner: "manual", ts: Date.now() };
-      indexTargetInSector(rTarget, rSector);
-      print(`[DEV] ${rTarget} relocated to Sector-${rSector}.`, "success");
-      break;
-
-    case cmd === "system":
-      print("ARCHIVE-ZER0 SYSTEM INFO:");
-      print("OS Build: A0-Terminal v3.2");
-      print("Database: Connected");
-      print("Security Layer: Active");
-      print("Network Sync: Stable");
-      break;
-
-    case cmd === "home":
-      print("Returning to home directory...");
-      setTimeout(() => { window.location.href = "index.html"; }, 800);
-      break;
-
-    default:
-      print("Unknown command.", "error");
+  // CLEAR
+  if (cmd === "clear") {
+    resetTerminal()
+    return
   }
+
+  // ARCHIVES
+  if (cmd === "archives") {
+    print(ARCHIVES.join(", "))
+    return
+  }
+
+  // VIEW
+  if (cmd.startsWith("view ")) {
+    const id = cmd.split(" ")[1]
+
+    if (!id) {
+      print("Usage: view <id>", "error")
+      return
+    }
+
+    const { data, error } = await supabaseClient
+      .from("anomalies")
+      .select("*")
+      .eq("code_name", id.toLowerCase())
+      .single()
+
+    if (error || !data) {
+      print("[ERROR] Archive not found", "error")
+      return
+    }
+
+    print("ACCESSING ARCHIVE...", "warning")
+
+    setTimeout(() => {
+      print(`=== ${data.code_name.toUpperCase()} ===`)
+      print(`ARCHIVE: ${data.archive}`)
+      print(`STATUS: ${data.status}`)
+      print(`THREAT: ${data.threat_level}`)
+      print(`INFO: ${data.description}`)
+    }, 500)
+
+    return
+  }
+
+  print("Unknown command", "error")
 }
 
-// ===== Input Listener =====
-input.addEventListener("keydown", async function(e) {
+// ===== INPUT =====
+input.addEventListener("keydown", async (e) => {
   if (e.key === "Enter") {
-    e.preventDefault();
-    const command = input.value.trim();
-    if (!command) return;
-    print("> " + command);
-    await handleCommand(command.toLowerCase());
-    commandHistory.push(command);
-    historyIndex = commandHistory.length;
-    input.value = "";
-    reverseSearchActive = false;
-  } else if (e.key === "Tab") {
-    e.preventDefault();
-    const cmds = ["help","login","create","archives","view","report","scan","decrypt","status","alerts","time","trace","echo","clear","controls","system","random","home"];
-    const match = cmds.find(c => c.startsWith(input.value));
-    if (match) input.value = match;
-  } else if (e.ctrlKey) {
-    switch(e.key.toLowerCase()) {
-      case "l": e.preventDefault(); resetTerminal(); break;
-      case "c": e.preventDefault(); print("^C"); input.value=""; break;
-      case "u": e.preventDefault(); input.value=""; break;
-      case "a": e.preventDefault(); input.selectionStart = input.selectionEnd = 0; break;
-      case "e": e.preventDefault(); input.selectionStart = input.selectionEnd = input.value.length; break;
-      case "r": e.preventDefault(); reverseSearchActive=true; reverseSearchQuery=""; reverseSearchMatch=""; print("(reverse-i-search)`': "); break;
-    }
-  } else if (reverseSearchActive) {
-    if(e.key==="Escape"){ reverseSearchActive=false; print(""); }
-    else if(e.key==="Backspace"){ e.preventDefault(); reverseSearchQuery=reverseSearchQuery.slice(0,-1); }
-    else if(e.key.length===1){ e.preventDefault(); reverseSearchQuery+=e.key; }
-    else if(e.key==="Enter"){ e.preventDefault(); if(reverseSearchMatch) input.value=reverseSearchMatch; reverseSearchActive=false; }
-    if(reverseSearchActive){
-      const match = commandHistory.slice().reverse().find(c=>c.includes(reverseSearchQuery));
-      reverseSearchMatch = match || "";
-      print(`(reverse-i-search)\`${reverseSearchQuery}': ${reverseSearchMatch}`);
-    }
+    const value = input.value
+    input.value = ""
+
+    print("> " + value)
+    await handleCommand(value)
   }
-});
+})
 
-// ===== Global Shortcuts =====
-document.addEventListener("keydown",(e)=>{
-  if(e.key==="/"){ e.preventDefault(); input.focus(); }
-  if(e.key==="ArrowUp"){ historyIndex>0 ? historyIndex-- : null; input.value=commandHistory[historyIndex]||""; e.preventDefault(); }
-  if(e.key==="ArrowDown"){ historyIndex<commandHistory.length-1 ? historyIndex++ : historyIndex=commandHistory.length; input.value=commandHistory[historyIndex]||""; e.preventDefault(); }
-});
-document.addEventListener("click",()=>input.focus());
-window.onload=()=>input.focus();
-
-// ===== Initialize =====
-resetTerminal();
-loadArchives();
+// ===== START =====
+resetTerminal()
+loadArchives()
