@@ -66,32 +66,16 @@ async function handleCommand(cmd) {
   }
 
   // ARCHIVES
-  if (cmd === "archives") {
+   if (cmd === "archives") {
     print(ARCHIVES.join(", "))
     return
   }
 
   // VIEW
-  if (cmd.startsWith("view ")) {
+ if (cmd.startsWith("view ")) {
   const id = cmd.split(" ")[1]?.toLowerCase()
 
-  const { data, error } = await supabaseClient
-    .from("anomalies")
-    .select("code_name")
-    .eq("code_name", id)
-    .single()
-
-  if (error || !data) {
-    print("[ERROR] Archive not found", "error")
-    return
-  }
-
-  print(`Opening ${id}.html...`, "warning")
-
-  setTimeout(() => {
-    window.location.href = `${id}.html`
-  }, 600)
-
+  window.location.href = `template.html?id=${id}`
   return
 }
 
