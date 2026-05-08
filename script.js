@@ -1,3 +1,22 @@
+const supabaseUrl = "https://gqgyaigsieynxgxgzdvm.supabase.co/"
+
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxZ3lhaWdzaWV5bnhneGd6ZHZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczNjczNDYsImV4cCI6MjA5Mjk0MzM0Nn0.UkTumgRaj7ModAUeE_Fg5vTA2VL0Hug-4lo_DUSgRNM"
+
+const supabaseClient = supabase.createClient(
+  supabaseUrl,
+  supabaseKey
+)
+
+async function testDB() {
+  const { data, error } = await supabaseClient
+    .from("anomalies")
+    .select("*")
+
+  console.log(data, error)
+}
+
+testDB()
+
 // terminal.js — ARCHIVE-ZER0 TERMINAL SYSTEM (Full Edition)
 // Font: Consolas
 // Version: 3.2 — Improved entity management & dev fixes
