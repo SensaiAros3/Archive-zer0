@@ -73,36 +73,27 @@ async function handleCommand(cmd) {
 
   // VIEW
   if (cmd.startsWith("view ")) {
-    const id = cmd.split(" ")[1]
+  const id = cmd.split(" ")[1]?.toLowerCase()
 
-    if (!id) {
-      print("Usage: view <id>", "error")
-      return
-    }
+  const { data, error } = await supabaseClient
+    .from("anomalies")
+    .select("code_name")
+    .eq("code_name", id)
+    .single()
 
-    const { data, error } = await supabaseClient
-      .from("anomalies")
-      .select("*")
-      .eq("code_name", id.toLowerCase())
-      .single()
-
-    if (error || !data) {
-      print("[ERROR] Archive not found", "error")
-      return
-    }
-
-    print("ACCESSING ARCHIVE...", "warning")
-
-    setTimeout(() => {
-      print(`=== ${data.code_name.toUpperCase()} ===`)
-      print(`ARCHIVE: ${data.archive}`)
-      print(`STATUS: ${data.status}`)
-      print(`THREAT: ${data.threat_level}`)
-      print(`INFO: ${data.description}`)
-    }, 500)
-
+  if (error || !data) {
+    print("[ERROR] Archive not found", "error")
     return
   }
+
+  print(`Opening ${id}.html...`, "warning")
+
+  setTimeout(() => {
+    window.location.href = `${id}.html`
+  }, 600)
+
+  return
+}
 
   print("Unknown command", "error")
 }
