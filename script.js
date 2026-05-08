@@ -29,31 +29,23 @@ const input = document.getElementById("command");
 let devMode = false;
 let loginAttempts = 0;
 let loginDisabled = false;
+async function loadArchives() {
+  const { data, error } = await supabaseClient
+    .from("anomalies")
+    .select("code_name")
+
+  if (error) {
+    print("[DB ERROR] " + error.message, "error")
+    return
+  }
+
+  ARCHIVES = data.map(item => item.code_name)
+
+  print(`[SYSTEM] ${ARCHIVES.length} anomalies loaded.`, "success")
+}
 
 // ===== Entity / Archive Management =====
-const ARCHIVES = [
-  "Z-001",
-  "Z-002",
-  "Z-003",
-  "Z-004",
-  "Z-005",
-  "Z-006",
-  "Z-007",
-  "Z-008",
-  "Z-009",
-  "Z-010",
-  "Z-011",
-  "Z-012",
-  "Z-013",
-  "Z-014",
-  "Z-015",
-  "Z-016",
-  "Z-017",
-  "Z-018",
-  "Z-019",
-  "Z-020",
-  "Z-021"
-];
+let archives = []
 
 const traceLog = {};
 const sectorIndex = {};
@@ -411,3 +403,4 @@ window.onload=()=>input.focus();
 
 // ===== Initialize =====
 resetTerminal();
+loadArchives();
