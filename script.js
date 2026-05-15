@@ -77,20 +77,32 @@ async function handleCommand(cmdRaw) {
   }
 
   // SIGNUP
-  if (cmd === "signup") {
-    const username = prompt("Username")
-    const password = prompt("Password")
+if (cmd === "signup") {
+  const email = prompt("Email")
+  const password = prompt("Password")
 
-    const { error } = await supabaseClient
-      .from("users")
-      .insert([{ username, password, role: "user" }])
+  const { data, error } = await supabaseClient.auth.signUp({
+    email,
+    password
+  })
 
-    if (error) print("[SIGNUP FAILED]", "error")
-    else print("[ACCOUNT CREATED]", "success")
-
+  if (error) {
+    print("[SIGNUP FAILED] " + error.message, "error")
     return
   }
 
+  print("[ACCOUNT CREATED] check email (if confirmation enabled)", "success")
+  return
+}
+
+  //LOGUT
+  if (cmd === "logout") {
+  await supabaseClient.auth.signOut()
+  sessionStorage.clear()
+  print("[LOGGED OUT]", "success")
+  return
+}
+  
   // LOGIN
  if (cmd === "login") {
   const email = prompt("Email")
