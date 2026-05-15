@@ -5,7 +5,8 @@ const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey)
 
 function isAdmin() {
-  return sessionStorage.getItem("role") === "admin"
+  const user = supabaseClient.auth.getUser()
+  return sessionStorage.getItem("user") === "abdulazizalikaj0@gmail.com"
 }
 
 // ===== DOM =====
