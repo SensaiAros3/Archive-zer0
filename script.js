@@ -214,7 +214,6 @@ if (cmd.startsWith("unlock ")) {
     .select("*")
     .eq("username", username)
     .eq("password", password)
-    .single()
 
   if (error || !data) {
     print("[ACCESS DENIED]", "error")
