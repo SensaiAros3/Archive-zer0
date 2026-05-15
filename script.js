@@ -123,6 +123,8 @@ sessionStorage.setItem("user", user.email)
 sessionStorage.setItem("role", profile.role)
 
 print(`[LOGIN SUCCESS] ${user.email} (${profile.role})`, "success")
+ return
+ }
 
   // CREATE
   if (cmd === "create") {
