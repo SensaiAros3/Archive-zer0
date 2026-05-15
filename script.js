@@ -103,12 +103,15 @@ async function handleCommand(cmdRaw) {
 
     const user = data?.[0]
 
-    if (error || !user) {
+    if (error || data.length === 0) {
       print("[ACCESS DENIED]", "error")
+      console.log(data)
       return
     }
 
-    sessionStorage.setItem("role", user.role || "user")
+    const user = data[0]
+
+    sessionStorage.setItem("role", user.role)
     sessionStorage.setItem("user", user.username)
 
     print(`[LOGIN SUCCESS] ${user.username}`, "success")
