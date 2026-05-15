@@ -108,11 +108,21 @@ async function handleCommand(cmdRaw) {
 
   const user = data.user
 
-  sessionStorage.setItem("user", user.email)
+const { data: profile, error: pError } = await supabaseClient
+  .from("profiles")
+  .select("role")
+  .eq("id", user.id)
+  .single()
 
-  print(`[LOGIN SUCCESS] ${user.email}`, "success")
+if (pError) {
+  print("[PROFILE ERROR]", "error")
   return
 }
+
+sessionStorage.setItem("user", user.email)
+sessionStorage.setItem("role", profile.role)
+
+print(`[LOGIN SUCCESS] ${user.email} (${profile.role})`, "success")
 
   // CREATE
   if (cmd === "create") {
