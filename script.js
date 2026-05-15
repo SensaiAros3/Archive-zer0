@@ -91,32 +91,27 @@ async function handleCommand(cmdRaw) {
   }
 
   // LOGIN
-  if (cmd === "login") {
-    const username = prompt("Username")
-    const password = prompt("Password")
+ if (cmd === "login") {
+  const email = prompt("Email")
+  const password = prompt("Password")
 
-    const { data, error } = await supabaseClient
-      .from("users")
-      .select("*")
-      .eq("username", username)
-      .eq("password", password)
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password
+  })
 
-    const user = data?.[0]
-
-    if (error || data.length === 0) {
-      print("[ACCESS DENIED]", "error")
-      console.log(data)
-      return
-    }
-
-    const user = data[0]
-
-    sessionStorage.setItem("role", user.role)
-    sessionStorage.setItem("user", user.username)
-
-    print(`[LOGIN SUCCESS] ${user.username}`, "success")
+  if (error) {
+    print("[ACCESS DENIED] " + error.message, "error")
     return
   }
+
+  const user = data.user
+
+  sessionStorage.setItem("user", user.email)
+
+  print(`[LOGIN SUCCESS] ${user.email}`, "success")
+  return
+}
 
   // CREATE
   if (cmd === "create") {
