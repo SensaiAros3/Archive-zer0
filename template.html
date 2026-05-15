@@ -2,98 +2,119 @@
 <html lang="en">
 <head>
   <link rel="icon" href="logo.ico">
+  <link rel="stylesheet" href="styles.css">
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Archive-ZER0 // Entry</title>
+
+  <title>Archive-ZER0</title>
 
   <style>
-    body {
-      background: #000;
-      color: #e0e0e0;
-      font-family: Consolas, monospace;
-      padding: 40px;
-      line-height: 1.6;
-    }
-
-    .top-section {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      margin-bottom: 30px;
-    }
-
-    .logo {
-      width: 120px;
-      cursor: pointer;
-      filter: drop-shadow(0 0 6px #00ffff55);
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 28px;
-      color: #fff;
-      letter-spacing: 2px;
-    }
-
-    p {
-      margin: 0;
-      color: #999;
-    }
-
-    #anomaly {
-      margin-top: 30px;
-      white-space: pre-wrap;
-      background: #050505;
-      padding: 20px;
-      border-left: 2px solid #00ffff;
-    }
-
     .error {
-      color: #ff4d4d;
+      color: red;
     }
 
-    .loading {
-      color: #00ffff;
+    #logs-container pre {
+      margin-bottom: 20px;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="top-section">
-    <a href="index.html">
-      <img src="images/logo.png" class="logo">
-    </a>
+  <!-- TERMINAL SHORTCUT -->
+  <script>
+    document.addEventListener("keydown", function(event) {
+      if (event.ctrlKey && event.key.toLowerCase() === "`") {
+        event.preventDefault()
+        window.location.href = "wander-page.html"
+      }
+    })
+  </script>
 
-    <div>
-      <h1>ARCHIVE-ZER0</h1>
-      <p>“Every world leaves echoes.”</p>
+  <div class="fade-in">
+
+    <!-- TOP SECTION -->
+    <div class="top-section">
+
+      <a href="index.html">
+        <img src="images/logo.png" alt="Archive Logo" class="logo">
+      </a>
+
+      <div class="site-title">
+        <h1>ARCHIVE-ZER0</h1>
+        <p>
+          “Every world leaves echoes.<br>
+          We collect them.”
+        </p>
+      </div>
+
     </div>
+
+    <!-- MAIN ANOMALY DATA -->
+    <pre id="main-data">
+Decrypting anomaly...
+    </pre>
+
+    <!-- LOGS -->
+    <div class="scp-entry">
+
+      <h2 style="font-family: Consolas;">
+        Logs:
+      </h2>
+
+      <div id="logs-container">
+        <pre>Loading logs...</pre>
+      </div>
+
+    </div>
+
   </div>
 
-  <div id="anomaly" class="loading">Decrypting anomaly...</div>
+  <footer>
+    ARCHIVE-ZER0 © ████-2025
+  </footer>
 
-  <!-- Supabase -->
+  <!-- SUPABASE -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
   <script>
+
+    // ===== SUPABASE =====
+
     const supabaseUrl = "https://gqgyaigsieynxgxgzdvm.supabase.co"
+
     const supabaseKey = "YOUR_ANON_KEY"
 
-    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey)
+    const supabaseClient = supabase.createClient(
+      supabaseUrl,
+      supabaseKey
+    )
+
+    // ===== URL PARAM =====
 
     const params = new URLSearchParams(window.location.search)
+
     const id = params.get("id")
 
-    const box = document.getElementById("anomaly")
+    // ===== DOM =====
 
-    function glitchText(text) {
-      return text.replace(/█/g, () => Math.random() > 0.5 ? "█" : "▒")
-    }
+    const mainData = document.getElementById("main-data")
 
-    async function load() {
+    const logsContainer = document.getElementById("logs-container")
+
+    // ===== LOAD ANOMALY =====
+
+    async function loadAnomaly() {
+
       if (!id) {
-        box.innerHTML = "<span class='error'>No anomaly ID provided.</span>"
+
+        mainData.innerHTML = `
+          <span class="error">
+            No anomaly ID provided.
+          </span>
+        `
+
         return
       }
 
@@ -104,40 +125,70 @@
         .single()
 
       if (error || !data) {
-        box.innerHTML = "<span class='error'>Anomaly not found.</span>"
+
+        mainData.innerHTML = `
+          <span class="error">
+            Anomaly not found.
+          </span>
+        `
+
         return
       }
 
-      let output = `
+      // ===== MAIN INFO =====
+
+      mainData.textContent = `
 ${data.code_name.toUpperCase()}
+
 Class: ${data.threat_level}
 
-Containment: ${data.archive}
-
-Status: ${data.status}
+Containment:
+${data.containment || "UNKNOWN"}
 
 Description:
 ${data.description}
 
---- LOGS ---
+Behavior:
+${data.behavior || "UNKNOWN"}
+
+Status:
+${data.status || "UNKNOWN"}
       `
 
-      // fake log system (you can expand later in DB)
-      const logs = [
-        "Observation session initiated.",
-        "Subject remains unstable under direct viewing.",
-        "Minor reflection distortion detected.",
-        "████ signal interference recorded."
-      ]
+      // ===== LOGS =====
 
-      logs.forEach(l => {
-        output += "\n" + l
-      })
+      logsContainer.innerHTML = ""
 
-      box.innerHTML = glitchText(output)
+      if (data.logs && Array.isArray(data.logs)) {
+
+        data.logs.forEach(log => {
+
+          const pre = document.createElement("pre")
+
+          pre.textContent = `
+${log.title}
+
+Date: ${log.date}
+
+${log.content}
+          `
+
+          logsContainer.appendChild(pre)
+
+        })
+
+      } else {
+
+        logsContainer.innerHTML = `
+          <pre>No logs found.</pre>
+        `
+
+      }
+
     }
 
-    load()
+    loadAnomaly()
+
   </script>
 
 </body>
