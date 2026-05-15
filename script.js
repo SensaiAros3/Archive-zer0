@@ -7,6 +7,10 @@ const supabaseClient = supabase.createClient(
   supabaseKey
 )
 
+//HANDLER
+function isAdmin() {
+  return sessionStorage.getItem("role") === "admin"
+}
 // ===== DOM =====
 const terminal = document.getElementById("terminal")
 const input = document.getElementById("command")
@@ -64,6 +68,166 @@ async function handleCommand(cmd) {
     resetTerminal()
     return
   }
+  
+  //CREATE
+  if (cmd === "create") {
+
+  if (!isAdmin()) {
+    print("[NO ACCESS]", "error")
+    return
+  }
+
+  const code = prompt("Code name (e.g Z-001)")
+  const desc = prompt("Description")
+
+  const { error } = await supabaseClient
+    .from("anomalies")
+    .insert([{
+      code_name: code.toLowerCase(),
+      description: desc,
+      status: "ACTIVE",
+      locked: false
+    }])
+
+  if (error) {
+    print("[CREATE FAILED] " + error.message, "error")
+  } else {
+    print("[ANOMALY CREATED]", "success")
+    loadArchives()
+  }
+
+  return
+  }
+  //DELETE
+
+  //LOCK
+  if (cmd.startsWith("lock ")) {
+
+  if (!isAdmin()) return print("[NO ACCESS]", "error")
+
+  const id = cmd.split(" ")[1]?.toLowerCase()
+
+  await supabaseClient
+    .from("anomalies")
+    .update({ locked: true })
+    .eq("code_name", id)
+
+  print("[LOCKED]", "success")
+  return
+}
+//UNLOCK
+
+if (cmd.startsWith("unlock ")) {
+
+  if (!isAdmin()) return print("[NO ACCESS]", "error")
+
+  const id = cmd.split(" ")[1]?.toLowerCase()
+
+  await supabaseClient
+    .from("anomalies")
+    .update({ locked: false })
+    .eq("code_name", id)
+
+  print("[UNLOCKED]", "success")
+  return
+}
+  if (cmd.startsWith("delete ")) {
+
+  if (!isAdmin()) {
+    print("[NO ACCESS]", "error")
+    return
+  }
+
+  const id = cmd.split(" ")[1]?.toLowerCase()
+
+  const { error } = await supabaseClient
+    .from("anomalies")
+    .delete()
+    .eq("code_name", id)
+
+  if (error) {
+    print("[DELETE FAILED] " + error.message, "error")
+  } else {
+    print("[DELETED]", "success")
+    loadArchives()
+  }
+
+  return
+}
+  
+  //EDIT
+  if (cmd.startsWith("edit ")) {
+
+  if (!isAdmin()) {
+    print("[NO ACCESS]", "error")
+    return
+  }
+
+  const id = cmd.split(" ")[1]?.toLowerCase()
+  const newDesc = prompt("New description")
+
+  const { error } = await supabaseClient
+    .from("anomalies")
+    .update({ description: newDesc })
+    .eq("code_name", id)
+
+  if (error) {
+    print("[EDIT FAILED] " + error.message, "error")
+  } else {
+    print("[UPDATED]", "success")
+  }
+
+  return
+}
+  
+  //SIGNUP
+  if (cmd === "signup") {
+
+  const username = prompt("Choose username")
+  const password = prompt("Choose password")
+
+  const { error } = await supabaseClient
+    .from("users")
+    .insert([{
+      username,
+      password,
+      role: "user"
+    }])
+
+  if (error) {
+    print("[SIGNUP FAILED]", "error")
+  } else {
+    print("[ACCOUNT CREATED]", "success")
+  }
+
+  return
+}
+  
+  //LOGIN
+  if (cmd === "login") {
+
+  const username = prompt("Username")
+  const password = prompt("Password")
+
+  const { data, error } = await supabaseClient
+    .from("users")
+    .select("*")
+    .eq("username", username)
+    .eq("password", password)
+    .single()
+
+  if (error || !data) {
+    print("[ACCESS DENIED]", "error")
+    return
+  }
+
+  sessionStorage.setItem("role", data.role)
+  sessionStorage.setItem("user", data.username)
+
+  print(`[LOGIN SUCCESS] ${data.username}`, "success")
+
+  return
+}
 
   // ARCHIVES
    if (cmd === "archives") {
@@ -73,12 +237,23 @@ async function handleCommand(cmd) {
 
   // VIEW
  if (cmd.startsWith("view ")) {
+
   const id = cmd.split(" ")[1]?.toLowerCase()
+
+  const { data } = await supabaseClient
+    .from("anomalies")
+    .select("locked")
+    .eq("code_name", id)
+    .single()
+
+  if (data?.locked && !isAdmin()) {
+    print("[ACCESS BLOCKED] File is locked", "error")
+    return
+  }
 
   window.location.href = `template.html?id=${id}`
   return
 }
-
   print("Unknown command", "error")
 }
 
